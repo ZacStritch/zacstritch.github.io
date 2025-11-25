@@ -76,26 +76,26 @@
             box-shadow:
                 inset 0 0 0 3px #8bac0f,
                 inset 0 0 0 6px var(--pixel-black);
-            padding: 12px; /* tighter */
+            padding: 12px;
             display: flex;
             flex-direction: column;
         }
 
-        /* Portrait area – smaller */
+        /* Portrait area – ~1/3 of the screen */
         .portrait-wrapper {
-            flex: 0 0 28%;
-            min-height: 100px;
-            max-height: 200px;
+            flex: 0 0 33%;
+            min-height: 110px;
+            max-height: 230px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
         .portrait-container {
-            width: min(36vw, 36vh);
-            height: min(36vw, 36vh);
-            max-width: 200px;
-            max-height: 200px;
+            width: min(38vw, 38vh);
+            height: min(38vw, 38vh);
+            max-width: 210px;
+            max-height: 210px;
             position: relative;
             image-rendering: pixelated;
             margin-bottom: 1vh;
@@ -145,20 +145,20 @@
             50% { transform: translateY(-2px); }
         }
 
-        /* Dialogue area – bottom section */
+        /* Dialogue area – rest of screen */
         .dialogue-wrapper {
-            flex: 1 1 72%;
+            flex: 1 1 67%;
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
-            padding: 0.4rem 0.4rem;
-            padding-bottom: calc(env(safe-area-inset-bottom, 0) + 0.6rem);
-            gap: 0.35rem;
+            padding: 0.5rem 0.5rem;
+            padding-bottom: calc(env(safe-area-inset-bottom, 0) + 0.7rem);
+            gap: 0.4rem;
         }
 
         #dialogue-box {
-            min-height: 40vh;
-            max-height: 65vh;
+            flex: 1 1 auto;
+            min-height: 0;       /* allow flex to shrink properly */
             display: flex;
             flex-direction: column;
             cursor: pointer;
@@ -168,6 +168,7 @@
             flex: 1 1 auto;
             position: relative;
             overflow: hidden; /* no scrolling; we paginate instead */
+            min-height: 0;
         }
 
         #dialogue-text {
@@ -268,7 +269,7 @@
         <div id="error-msg"></div>
 
         <!-- Start Overlay -->
-        <div id="start-overlay" class="z-50 bg-black flex flex-col items-center justify-center text-white p-6 gap-8 pb-safe">
+        <div id="start-overlay" class="z-50 bg-blackfangen flex flex-col items-center justify-center text-white p-6 gap-8 pb-safe">
             <h1 class="text-center text-green-400 leading-snug px-4">
                 NIC'S BIRTHDAY QUEST
             </h1>
@@ -314,7 +315,7 @@
                 <div id="next-arrow" class="triangle-down hidden"></div>
             </div>
 
-            <div id="options-container" class="w-full flex flex-col gap-2 hidden mb-1">
+            <div id="options-container" class="w-full flex flex-col gap-2 hidden mt-1">
                 <!-- Options injected here -->
             </div>
         </div>
@@ -560,7 +561,6 @@
                 // check if the last bit fits, otherwise split again crudely
                 textEl.innerText = current;
                 if (textEl.scrollHeight > maxHeight) {
-                    // crude secondary split
                     const words2 = current.split(' ');
                     let c2 = '';
                     for (const w2 of words2) {
@@ -748,8 +748,8 @@
 
     // Re-paginate on orientation change so it still fits
     window.addEventListener('orientationchange', () => {
-        // slight delay so layout settles
         setTimeout(() => {
+            if (gameState.currentNode && !els.overlay.classList.contains('hidden')) return;
             if (gameState.currentNode) {
                 loadNode(gameState.currentNode);
             }
