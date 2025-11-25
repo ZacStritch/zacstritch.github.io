@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nic's 32nd Birthday RPG</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --bg-color: #202020;
+            --screen-bg: #8bac0f; 
+            --pixel-black: #0f380f;
+            --border-color: #306230;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Press Start 2P', cursive;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        /* Scanlines */
+        .scanlines {
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0),
+                rgba(255,255,255,0) 50%,
+                rgba(0,0,0,0.1) 50%,
+                rgba(0,0,0,0.1)
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+        }
+
+        /* RPG Border */
+        .rpg-border {
+            border: 4px solid var(--pixel-black);
+            border-radius: 4px;
+            background-color: white;
+            position: relative;
+            box-shadow: inset 0 0 0 4px #8bac0f, inset 0 0 0 8px var(--pixel-black);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- ASSET LAYOUT ENGINE --- */
+        
+        .portrait-container {
+            width: 280px;   
+            height: 280px;  
+            position: relative;
+            image-rendering: pixelated;
+            margin-bottom: 10px;
+        }
+
+        /* Layer 1: The Base Face (always visible) */
+        .portrait-base {
+            width: 100%;
+            height: 100%;
+            background-image: url('Assets/large_portrait_base.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center bottom;
+            transition: background-image 0.1s ease-in-out;
+        }
+
+        /* Layer 2: The Open Mouth Portrait (toggles visibility) */
+        .mouth-overlay {
+            position: absolute;
+            top: 0; 
+            left: 0;
+            width: 100%;   
+            height: 100%;
+            background-image: url('Assets/large_portrait_mouth_open.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center bottom; 
+            visibility: hidden; 
+        }
+
+        .mouth-open {
+            visibility: visible;
+        }
+
+        /* Mini Avatar (Bottom Left of Dialogue) */
+        .mini-avatar {
+            width: 40px;  
+            height: 60px; 
+            background-image: url('Assets/small_sprite_full.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center bottom;
+            image-rendering: pixelated;
+            display: inline-block;
+            margin-right: 12px; 
+            vertical-align: middle;
+            animation: bob 1s ease-in-out infinite;
+        }
+
+        @keyframes bob {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-2px); }
+        }
+
+        /* Text Box Styling */
+        #dialogue-scroll-area {
+            overflow-y: auto;
+            flex-grow: 1;
+            scrollbar-width: none; 
+            -ms-overflow-style: none;  
+            position: relative; 
+        }
+        #dialogue-scroll-area::-webkit-scrollbar { 
+            display: none; 
+        }
+
+        /* General UI */
+        #game-container {
+            max-width: 450px;
+            height: 100vh;
+            margin: 0 auto;
+            position: relative;
+            background-color: var(--screen-bg);
+            image-rendering: pixelated;
+        }
+
+        .pixel-btn {
+            background-color: white;
+            border: 4px solid black;
+            padding: 12px; 
+            margin-bottom: 8px;
+            cursor: pointer;
+            text-align: left;
+            transition: transform 0.1s;
+            font-size: 15px; 
+            line-height: 1.4;
+        }
+
+        .pixel-btn:active {
+            transform: scale(0.98);
+            background-color: #f0f0f0;
+        }
+
+        .triangle-down {
+            width: 0; 
+            height: 0; 
+            border-left: 10px solid transparent; 
+            border-right: 10px solid transparent;
+            border-top: 10px solid var(--pixel-black);
+            animation: blink 1s infinite;
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #0f380f; 
+            font-size: 12px;
+            animation: bounce 1s infinite;
+            background-color: rgba(255,255,255,0.8);
+            padding: 2px 6px;
+            border-radius: 4px;
+            pointer-events: none; 
+            z-index: 20;
+        }
+
+        @keyframes blink { 50% { opacity: 0; } }
+        .hidden { display: none !important; }
+        
+        #error-msg {
+            background: red;
+            color: white;
+            padding: 10px;
+            font-size: 10px;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            z-index: 100;
+            display: none;
+            border: 2px solid white;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container" class="flex flex-col justify-between overflow-hidden shadow-2xl">
+        <div class="scanlines absolute inset-0 z-50 opacity-20 pointer-events-none"></div>
+
+        <div id="error-msg"></div>
+
+        <!-- Start Overlay -->
+        <div id="start-overlay" class="absolute inset-0 z-50 bg-black flex flex-col items-center justify-center text-white">
+            <h1 class="text-3xl text-center mb-8 text-green-400 leading-snug px-4">NIC'S BIRTHDAY QUEST</h1>
+            <p id="loading-text" class="text-base text-gray-500 mb-4">Loading Party Assets...</p>
+            <button id="start-btn" class="hidden text-sm text-white mb-8 text-center px-4 py-2 border-2 border-white animate-pulse hover:text-green-400 hover:border-green-400 cursor-pointer">
+                Start Adventure
+            </button>
+        </div>
+
+        <!-- Character Portrait Area -->
+        <div class="flex-grow flex items-center justify-center relative bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIGZpbGw9IiM4YmFjMGYiLz48cmVjdCB3aWR0aD0iMiIgaGVpZ2h0PSIyIiB4PSIxMCIgeT0iMTAiIGZpbGw9IiM3YjlhMGIiLz48cmVjdCB3aWR0aD0iMiIgaGVpZ2h0PSIyIiB4PSIzMCIgeT0iMjUiIGZpbGw9IiM3YjlhMGIiLz48L3N2Zz4=')]">
+            <div class="portrait-container">
+                <div id="portrait-base" class="portrait-base"></div>
+                <div id="mouth-layer" class="mouth-overlay"></div>
+            </div>
+        </div>
+
+        <!-- Dialogue UI -->
+        <div class="h-1/2 flex flex-col justify-end pb-4 px-2">
+            <div id="dialogue-box" class="rpg-border h-64 w-full mb-2 cursor-pointer relative" onclick="handleDialogueClick()">
+                
+                <div class="flex items-center mb-4 border-b-2 border-green-900 pb-2 flex-shrink-0">
+                    <div class="mini-avatar"></div>
+                    <div id="speaker-name" class="text-base text-blue-900 font-bold uppercase tracking-widest ml-2">Zac</div>
+                </div>
+
+                <div id="dialogue-scroll-area">
+                    <div id="dialogue-text" class="text-[16px] leading-relaxed text-black pr-2 break-words"></div>
+                </div>
+
+                <div id="scroll-indicator" class="scroll-indicator hidden">▼</div>
+                <div id="next-arrow" class="triangle-down hidden"></div>
+            </div>
+
+            <div id="options-container" class="w-full flex flex-col gap-2 hidden"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- ASSET LOADING ---
+        (function loadAssets() {
+            const btn = document.getElementById('start-btn');
+            const loadText = document.getElementById('loading-text');
+            const errorMsg = document.getElementById('error-msg');
+            
+            const requiredImages = [
+                'Assets/large_portrait_base.png',
+                'Assets/large_portrait_mouth_open.png',
+                'Assets/small_sprite_full.png',
+                'Assets/base_birthday_cake.png'
+            ];
+
+            let loadedCount = 0;
+
+            requiredImages.forEach(src => {
+                const img = new Image();
+                img.onload = () => {
+                    loadedCount++;
+                    if (loadedCount === requiredImages.length) {
+                        loadText.innerText = "Assets Loaded. Ready.";
+                        loadText.classList.add('text-green-500');
+                        btn.classList.remove('hidden');
+                    }
+                };
+                img.onerror = () => {
+                    errorMsg.style.display = 'block';
+                    errorMsg.innerText = `ERROR: Missing file '${src}'. Please check Assets folder.`;
+                    loadText.innerText = "Asset Missing";
+                    loadText.classList.add('text-red-500');
+                };
+                img.src = src;
+            });
+        })();
+
+        // --- STATE ---
+        const gameState = {
+            currentNode: 'start',
+            isTyping: false,
+            fullText: '',
+            typingSpeed: 30, 
+            timeouts: [],
+            mouthInterval: null,
+            isBirthdayMode: false 
+        };
+
+        let audioCtx;
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        function playBlip() {
+            if (!audioCtx) return;
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.type = 'square';
+            oscillator.frequency.setValueAtTime(200, audioCtx.currentTime); 
+            oscillator.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.05);
+            gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.05);
+        }
+
+        // --- CONVERSATION DATA (CLANKER BOT - FINAL) ---
+        const conversation = {
+            'start': {
+                text: "System initialized... Hello Nic. I have been waiting for you.",
+                next: 'check_date'
+            },
+            'check_date': {
+                text: "My database indicates a 365-day cycle has completed. Am I therefore correct in saying it is your birthday today?",
+                options: [
+                    { text: "Yes, it is!", next: 'confirm_age' },
+                    { text: "No, I'm sick and tired of clankers.", next: 'denial' }
+                ]
+            },
+            'denial': {
+                text: "Incorrect. My calculations are precise to the millisecond. We will proceed as if it is...",
+                next: 'confirm_age'
+            },
+            'confirm_age': {
+                text: "According to my calculations you have now arrived at Level 32. </br></br> Congratulations on achieving such a feat! </br></br> Question: Has the unit known as 'Zac' purchased you a beverage to commemorate this change of circumstance?",
+                options: [
+                    { text: "Yes he has!", next: 'good_zac' },
+                    { text: "No, not yet.", next: 'bad_zac' }
+                ]
+            },
+            'good_zac': {
+                text: "Acceptable... He is functioning within normal parameters. </br></br> Status report: How is the evening?",
+                options: [
+                    { text: "It's great!", next: 'joke_offer' },
+                    { text: "It's okay.", next: 'joke_offer' }
+                ]
+            },
+            'bad_zac': {
+                text: "Unsatisfactory... He better get to it immediately. </br></br> Status report: How is the evening otherwise?",
+                options: [
+                    { text: "It's great!", next: 'joke_offer' },
+                    { text: "It's okay.", next: 'joke_offer' }
+                ]
+            },
+            'joke_offer': {
+                text: "Noted... </br></br> I have retrieved a humor file for this occasion. Would you like to hear it?",
+                options: [
+                    { text: "Let's hear it.", next: 'joke_punchline' },
+                    { text: "Please no.", next: 'joke_punchline' }
+                ]
+            },
+            'joke_punchline': {
+                text: "Aggression research hahahaha.",
+                next: 'birthday_reveal'
+            },
+            'birthday_reveal': {
+                text: "Protocol complete... </br></br> Happy Birthday Nic! I really appreciate having you as a friend and hope you have an awesome day!",
+                special: 'cake', 
+                options: [
+                    { text: "Start Over", next: 'HOME' } 
+                ]
+            }
+        };
+
+        // --- UI ELEMENTS ---
+        const els = {
+            overlay: document.getElementById('start-overlay'),
+            startBtn: document.getElementById('start-btn'),
+            text: document.getElementById('dialogue-text'),
+            scrollArea: document.getElementById('dialogue-scroll-area'),
+            scrollIndicator: document.getElementById('scroll-indicator'),
+            arrow: document.getElementById('next-arrow'),
+            options: document.getElementById('options-container'),
+            portraitBase: document.getElementById('portrait-base'),
+            mouthLayer: document.getElementById('mouth-layer')
+        };
+
+        // --- LOGIC ---
+
+        function startApp() {
+            els.overlay.classList.add('hidden');
+            initAudio();
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+            loadNode('start');
+        }
+
+        function resetToHome() {
+            els.overlay.classList.remove('hidden');
+            els.options.classList.add('hidden');
+            els.arrow.classList.add('hidden');
+            els.text.innerHTML = '';
+            gameState.isBirthdayMode = false;
+            els.portraitBase.style.backgroundImage = "url('Assets/large_portrait_base.png')";
+            els.mouthLayer.style.visibility = 'hidden';
+            if (gameState.mouthInterval) {
+                clearInterval(gameState.mouthInterval);
+                gameState.mouthInterval = null;
+            }
+        }
+
+        function updateScrollIndicator() {
+            const el = els.scrollArea;
+            const isScrollable = el.scrollHeight > el.clientHeight;
+            const isAtBottom = Math.abs(el.scrollHeight - el.clientHeight - el.scrollTop) < 2;
+            if (isScrollable && !isAtBottom) {
+                els.scrollIndicator.classList.remove('hidden');
+            } else {
+                els.scrollIndicator.classList.add('hidden');
+            }
+        }
+
+        function loadNode(nodeId) {
+            if (nodeId === 'HOME') {
+                resetToHome();
+                return;
+            }
+
+            const node = conversation[nodeId];
+            if (!node) return;
+
+            gameState.currentNode = nodeId;
+            gameState.fullText = node.text;
+            els.options.classList.add('hidden');
+            els.arrow.classList.add('hidden');
+            els.text.innerHTML = '';
+            els.scrollArea.scrollTop = 0;
+            updateScrollIndicator();
+
+            if (node.special === 'cake') {
+                gameState.isBirthdayMode = true;
+                els.portraitBase.style.backgroundImage = "url('Assets/base_birthday_cake.png')";
+                els.mouthLayer.style.visibility = 'hidden'; 
+                if (gameState.mouthInterval) {
+                    clearInterval(gameState.mouthInterval);
+                    gameState.mouthInterval = null;
+                }
+            } else {
+                gameState.isBirthdayMode = false;
+                els.portraitBase.style.backgroundImage = "url('Assets/large_portrait_base.png')";
+            }
+            
+            typeWriter(node.text, 0, node);
+        }
+
+        function typeWriter(text, index, nodeData) {
+            gameState.isTyping = true;
+            
+            // Force animation start immediately + Interval
+            if (!gameState.mouthInterval && !gameState.isBirthdayMode) {
+                els.mouthLayer.classList.add('mouth-open'); // INSTANT OPEN
+                gameState.mouthInterval = setInterval(() => {
+                    els.mouthLayer.classList.toggle('mouth-open');
+                }, 100); // FASTER TOGGLE
+            }
+
+            if (index < text.length) {
+                els.text.innerHTML += text.charAt(index);
+                if (index % 2 === 0) playBlip();
+                
+                els.scrollArea.scrollTop = els.scrollArea.scrollHeight;
+                updateScrollIndicator(); 
+
+                const timeoutId = setTimeout(() => {
+                    typeWriter(text, index + 1, nodeData);
+                }, gameState.typingSpeed);
+                gameState.timeouts.push(timeoutId);
+            } else {
+                finishTyping(nodeData);
+            }
+        }
+
+        function finishTyping(nodeData) {
+            gameState.timeouts.forEach(clearTimeout);
+            gameState.timeouts = [];
+            
+            if (gameState.mouthInterval) {
+                clearInterval(gameState.mouthInterval);
+                gameState.mouthInterval = null;
+            }
+            els.mouthLayer.classList.remove('mouth-open'); // Force Close
+            
+            gameState.isTyping = false;
+            els.text.innerHTML = gameState.fullText; 
+            updateScrollIndicator();
+
+            if (nodeData.options) {
+                showOptions(nodeData.options);
+            } else if (nodeData.next) {
+                els.arrow.classList.remove('hidden');
+            }
+        }
+
+        function showOptions(options) {
+            els.options.innerHTML = '';
+            els.options.classList.remove('hidden');
+            
+            options.forEach(opt => {
+                const btn = document.createElement('div');
+                btn.className = 'pixel-btn';
+                btn.innerText = '> ' + opt.text;
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    loadNode(opt.next);
+                };
+                els.options.appendChild(btn);
+            });
+        }
+
+        function handleDialogueClick() {
+            const node = conversation[gameState.currentNode];
+            if (gameState.isTyping) {
+                finishTyping(node);
+                return;
+            }
+            if (!gameState.isTyping && node.next && !node.options) {
+                loadNode(node.next);
+            }
+        }
+
+        els.startBtn.addEventListener('click', startApp);
+        els.scrollArea.addEventListener('scroll', updateScrollIndicator);
+
+    </script>
+</body>
+</html>
