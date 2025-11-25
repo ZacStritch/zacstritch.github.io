@@ -19,7 +19,6 @@
             font-family: 'Press Start 2P', cursive;
             overflow: hidden;
             touch-action: manipulation;
-            /* Mobile Safari/Chrome height fix */
             height: 100dvh; 
             width: 100vw;
         }
@@ -57,12 +56,10 @@
             position: relative;
             image-rendering: pixelated;
             margin-bottom: 10px;
-            /* Ensure portrait scales down on smaller screens */
             max-width: 90vw;
             max-height: 90vw;
         }
 
-        /* Layer 1: The Base Face (always visible) */
         .portrait-base {
             width: 100%;
             height: 100%;
@@ -70,12 +67,9 @@
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center bottom;
-            
-            /* Transition for smooth swapping to cake */
             transition: background-image 0.1s ease-in-out;
         }
 
-        /* Layer 2: The Open Mouth Portrait (toggles visibility) */
         .mouth-overlay {
             position: absolute;
             top: 0; 
@@ -93,7 +87,6 @@
             visibility: visible;
         }
 
-        /* Mini Avatar (Bottom Left of Dialogue) */
         .mini-avatar {
             width: 40px;  
             height: 60px; 
@@ -113,22 +106,15 @@
             50% { transform: translateY(-2px); }
         }
 
-        /* Text Box Styling */
-        #dialogue-scroll-area {
-            overflow-y: auto;
+        /* Text Box Styling - No Scrolling */
+        #dialogue-text-area {
             flex-grow: 1;
-            scrollbar-width: none; 
-            -ms-overflow-style: none;  
             position: relative; 
-        }
-        #dialogue-scroll-area::-webkit-scrollbar { 
-            display: none; 
+            overflow: hidden; /* Hide overflow if it happens, though pagination prevents it */
         }
 
-        /* General UI */
         #game-container {
             max-width: 450px;
-            /* Use dynamic height to fit mobile browser bars */
             height: 100dvh; 
             margin: 0 auto;
             position: relative;
@@ -155,6 +141,7 @@
             background-color: #f0f0f0;
         }
 
+        /* "Next" Arrow Indicator */
         .triangle-down {
             width: 0; 
             height: 0; 
@@ -166,23 +153,6 @@
             bottom: 10px;
             right: 10px;
             z-index: 30;
-        }
-
-        /* Scroll Indicator */
-        .scroll-indicator {
-            position: absolute;
-            bottom: 5px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: #0f380f; 
-            font-size: 12px;
-            animation: bounce 1s infinite;
-            background-color: rgba(255,255,255,0.9);
-            padding: 4px 8px;
-            border-radius: 4px;
-            pointer-events: none; 
-            z-index: 20;
-            border: 1px solid #0f380f;
         }
 
         @keyframes blink { 50% { opacity: 0; } }
@@ -206,7 +176,6 @@
 <body>
 
     <div id="game-container" class="shadow-2xl">
-        <!-- Z-index 60 to sit above start screen -->
         <div class="scanlines absolute inset-0 z-[60] opacity-20 pointer-events-none"></div>
 
         <div id="error-msg"></div>
@@ -225,23 +194,20 @@
 
         <!-- Character Portrait Area -->
         <div class="flex-grow flex items-center justify-center relative bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIGZpbGw9IiM4YmFjMGYiLz48cmVjdCB3aWR0aD0iMiIgaGVpZ2h0PSIyIiB4PSIxMCIgeT0iMTAiIGZpbGw9IiM3YjlhMGIiLz48cmVjdCB3aWR0aD0iMiIgaGVpZ2h0PSIyIiB4PSIzMCIgeT0iMjUiIGZpbGw9IiM3YjlhMGIiLz48L3N2Zz4=')]">
-            
             <div class="portrait-container">
                 <div id="portrait-base" class="portrait-base"></div>
                 <div id="mouth-layer" class="mouth-overlay"></div>
             </div>
-
         </div>
 
-        <!-- Dialogue UI with Safe Area Padding -->
+        <!-- Dialogue UI -->
         <div class="h-auto flex-shrink-0 flex flex-col justify-end pb-safe px-2"> 
             <style>
                 .pb-safe {
-                    /* Padding to avoid home bar overlap */
                     padding-bottom: env(safe-area-inset-bottom, 30px);
                 }
             </style>
-            <!-- Chatbox -->
+            
             <div id="dialogue-box" class="rpg-border h-64 w-full mb-2 cursor-pointer relative" onclick="handleDialogueClick()">
                 
                 <div class="flex items-center mb-4 border-b-2 border-green-900 pb-2 flex-shrink-0">
@@ -249,12 +215,11 @@
                     <div id="speaker-name" class="text-base text-blue-900 font-bold uppercase tracking-widest ml-2">Zac</div>
                 </div>
 
-                <div id="dialogue-scroll-area">
-                    <!-- Added padding-bottom (pb-6) to text to clear the arrow indicator -->
+                <div id="dialogue-text-area">
+                    <!-- Text will be injected here -->
                     <div id="dialogue-text" class="text-[16px] leading-relaxed text-black pr-2 break-words pb-6"></div>
                 </div>
 
-                <div id="scroll-indicator" class="scroll-indicator hidden">▼</div>
                 <div id="next-arrow" class="triangle-down hidden"></div>
             </div>
 
@@ -263,7 +228,7 @@
     </div>
 
     <script>
-        // --- ASSET LOADING LOGIC ---
+        // --- ASSET LOADING ---
         (function loadAssets() {
             const btn = document.getElementById('start-btn');
             const loadText = document.getElementById('loading-text');
@@ -298,9 +263,10 @@
             });
         })();
 
-        // --- Game State ---
+        // --- STATE ---
         const gameState = {
             currentNode: 'start',
+            pageIndex: 0, // Tracks which "page" of text we are on
             isTyping: false,
             fullText: '',
             typingSpeed: 30, 
@@ -309,7 +275,6 @@
             isBirthdayMode: false 
         };
 
-        // --- Audio Context ---
         let audioCtx;
         function initAudio() {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -330,57 +295,91 @@
             oscillator.stop(audioCtx.currentTime + 0.05);
         }
 
-        // --- Conversation Data (Restored Clanker Persona) ---
+        // --- CONVERSATION DATA (PAGINATED) ---
+        // Each 'text' is now an array of strings. Each string is one "screen" of text.
         const conversation = {
             'start': {
-                text: "System initialized... Hello Nic. I have been waiting for you.",
+                text: [
+                    "System initialized...", 
+                    "Hello Nic.",
+                    "I have been waiting for you."
+                ],
                 next: 'check_date'
             },
             'check_date': {
-                text: "My database indicates a 365-day cycle has completed. Am I therefore correct in saying it is your birthday today?",
+                text: [
+                    "My database indicates a 365-day cycle has completed...",
+                    "Am I therefore correct in saying it is your birthday today?"
+                ],
                 options: [
                     { text: "Yes, it is!", next: 'confirm_age' },
                     { text: "No, I'm sick and tired of clankers.", next: 'denial' }
                 ]
             },
             'denial': {
-                text: "Incorrect. My calculations are precise to the millisecond. We will proceed as if it is...",
+                text: [
+                    "Incorrect...",
+                    "My calculations are precise to the millisecond.",
+                    "We will proceed as if it is..."
+                ],
                 next: 'confirm_age'
             },
             'confirm_age': {
-                text: "According to my calculations you have now arrived at Level 32. <br><br> Congratulations on achieving such a feat! <br><br> Question: Has the unit known as 'Zac' purchased you a beverage to commemorate this change of circumstance?",
+                text: [
+                    "According to my calculations you have now arrived at Level 32.",
+                    "Congratulations on achieving such a feat!",
+                    "Question: Has the unit known as 'Zac' purchased you a beverage to commemorate this change of circumstance?"
+                ],
                 options: [
                     { text: "Yes he has!", next: 'good_zac' },
                     { text: "No, not yet.", next: 'bad_zac' }
                 ]
             },
             'good_zac': {
-                text: "Acceptable... He is functioning within normal parameters. <br><br> Status report: How is the evening?",
+                text: [
+                    "Acceptable...",
+                    "He is functioning within normal parameters.",
+                    "Status report: How is the evening?"
+                ],
                 options: [
                     { text: "It's great!", next: 'joke_offer' },
                     { text: "It's okay.", next: 'joke_offer' }
                 ]
             },
             'bad_zac': {
-                text: "Unsatisfactory... He better get to it immediately. <br><br> Status report: How is the evening otherwise?",
+                text: [
+                    "Unsatisfactory...",
+                    "He better get to it immediately.",
+                    "Status report: How is the evening otherwise?"
+                ],
                 options: [
                     { text: "It's great!", next: 'joke_offer' },
                     { text: "It's okay.", next: 'joke_offer' }
                 ]
             },
             'joke_offer': {
-                text: "Noted... <br><br> I have retrieved a humor file for this occasion. Would you like to hear it?",
+                text: [
+                    "Noted...",
+                    "I have retrieved a humor file for this occasion.",
+                    "Would you like to hear it?"
+                ],
                 options: [
                     { text: "Let's hear it.", next: 'joke_punchline' },
                     { text: "Please no.", next: 'joke_punchline' }
                 ]
             },
             'joke_punchline': {
-                text: "Aggression research hahahaha.",
+                text: [
+                    "Aggression research hahahaha."
+                ],
                 next: 'birthday_reveal'
             },
             'birthday_reveal': {
-                text: "Protocol complete... <br><br> Happy Birthday Nic! I really appreciate having you as a friend and hope you have an awesome day!",
+                text: [
+                    "Protocol complete...",
+                    "Happy Birthday Nic!",
+                    "I really appreciate having you as a friend and hope you have an awesome day!"
+                ],
                 special: 'cake', 
                 options: [
                     { text: "Start Over", next: 'HOME' } 
@@ -388,20 +387,18 @@
             }
         };
 
-        // --- DOM Elements ---
+        // --- DOM ELEMENTS ---
         const els = {
             overlay: document.getElementById('start-overlay'),
             startBtn: document.getElementById('start-btn'),
             text: document.getElementById('dialogue-text'),
-            scrollArea: document.getElementById('dialogue-scroll-area'),
-            scrollIndicator: document.getElementById('scroll-indicator'),
             arrow: document.getElementById('next-arrow'),
             options: document.getElementById('options-container'),
             portraitBase: document.getElementById('portrait-base'),
             mouthLayer: document.getElementById('mouth-layer')
         };
 
-        // --- Core Functions ---
+        // --- LOGIC ---
 
         function startApp() {
             els.overlay.classList.add('hidden');
@@ -424,17 +421,6 @@
             }
         }
 
-        function updateScrollIndicator() {
-            const el = els.scrollArea;
-            const isScrollable = el.scrollHeight > el.clientHeight;
-            const isAtBottom = Math.abs(el.scrollHeight - el.clientHeight - el.scrollTop) < 2;
-            if (isScrollable && !isAtBottom) {
-                els.scrollIndicator.classList.remove('hidden');
-            } else {
-                els.scrollIndicator.classList.add('hidden');
-            }
-        }
-
         function loadNode(nodeId) {
             if (nodeId === 'HOME') {
                 resetToHome();
@@ -445,13 +431,19 @@
             if (!node) return;
 
             gameState.currentNode = nodeId;
-            gameState.fullText = node.text;
+            // Always start at page 0 of the new node
+            gameState.pageIndex = 0;
+            
+            // Get the first page of text
+            // Ensure we handle both string (legacy) and array (new) just in case, though all are arrays now
+            const textData = Array.isArray(node.text) ? node.text : [node.text];
+            gameState.fullText = textData[0];
+
             els.options.classList.add('hidden');
             els.arrow.classList.add('hidden');
             els.text.innerHTML = '';
-            els.scrollArea.scrollTop = 0;
-            updateScrollIndicator();
 
+            // Check Special Events (Cake)
             if (node.special === 'cake') {
                 gameState.isBirthdayMode = true;
                 els.portraitBase.style.backgroundImage = "url('Assets/base_birthday_cake.png')";
@@ -465,56 +457,33 @@
                 els.portraitBase.style.backgroundImage = "url('Assets/large_portrait_base.png')";
             }
             
-            typeWriter(node.text, 0, node);
+            typeWriter(gameState.fullText, 0);
         }
 
-        function typeWriter(text, index, nodeData) {
+        function typeWriter(text, index) {
             gameState.isTyping = true;
             
-            // Force animation start immediately + Interval
             if (!gameState.mouthInterval && !gameState.isBirthdayMode) {
-                els.mouthLayer.classList.add('mouth-open'); // INSTANT OPEN
+                els.mouthLayer.classList.add('mouth-open'); 
                 gameState.mouthInterval = setInterval(() => {
                     els.mouthLayer.classList.toggle('mouth-open');
-                }, 100); // FASTER TOGGLE
+                }, 100); 
             }
 
             if (index < text.length) {
-                const char = text.charAt(index);
-
-                // HTML Tag Handling: Add whole tag at once
-                if (char === '<') {
-                    let tag = '';
-                    // Look ahead for the closing >
-                    while (text.charAt(index) !== '>' && index < text.length) {
-                        tag += text.charAt(index);
-                        index++;
-                    }
-                    tag += '>';
-                    index++; // Move past the >
-                    els.text.innerHTML += tag;
-                    
-                    // Recurse immediately to next char (no delay)
-                    typeWriter(text, index, nodeData);
-                    return;
-                }
-
-                els.text.innerHTML += char;
+                els.text.innerHTML += text.charAt(index);
                 if (index % 2 === 0) playBlip();
                 
-                els.scrollArea.scrollTop = els.scrollArea.scrollHeight;
-                updateScrollIndicator(); 
-
                 const timeoutId = setTimeout(() => {
-                    typeWriter(text, index + 1, nodeData);
+                    typeWriter(text, index + 1);
                 }, gameState.typingSpeed);
                 gameState.timeouts.push(timeoutId);
             } else {
-                finishTyping(nodeData);
+                finishTyping();
             }
         }
 
-        function finishTyping(nodeData) {
+        function finishTyping() {
             gameState.timeouts.forEach(clearTimeout);
             gameState.timeouts = [];
             
@@ -522,17 +491,14 @@
                 clearInterval(gameState.mouthInterval);
                 gameState.mouthInterval = null;
             }
-            els.mouthLayer.classList.remove('mouth-open'); // Force Close
+            els.mouthLayer.classList.remove('mouth-open');
             
             gameState.isTyping = false;
+            // Ensure complete text is shown
             els.text.innerHTML = gameState.fullText; 
-            updateScrollIndicator();
 
-            if (nodeData.options) {
-                showOptions(nodeData.options);
-            } else if (nodeData.next) {
-                els.arrow.classList.remove('hidden');
-            }
+            // Show arrow to indicate "Tap to continue"
+            els.arrow.classList.remove('hidden');
         }
 
         function showOptions(options) {
@@ -553,17 +519,37 @@
 
         function handleDialogueClick() {
             const node = conversation[gameState.currentNode];
+            const textArray = Array.isArray(node.text) ? node.text : [node.text];
+
+            // 1. If typing, instant finish
             if (gameState.isTyping) {
-                finishTyping(node);
+                finishTyping();
                 return;
             }
-            if (!gameState.isTyping && node.next && !node.options) {
-                loadNode(node.next);
+
+            // 2. If finished typing current page...
+            if (!gameState.isTyping) {
+                // Are there more pages in this node?
+                if (gameState.pageIndex < textArray.length - 1) {
+                    // YES -> Go to next page
+                    gameState.pageIndex++;
+                    gameState.fullText = textArray[gameState.pageIndex];
+                    els.text.innerHTML = ''; // Clear box
+                    els.arrow.classList.add('hidden'); // Hide arrow while typing
+                    typeWriter(gameState.fullText, 0);
+                } else {
+                    // NO -> End of node. Show options or go to next node
+                    if (node.options) {
+                        els.arrow.classList.add('hidden');
+                        showOptions(node.options);
+                    } else if (node.next) {
+                        loadNode(node.next);
+                    }
+                }
             }
         }
 
         els.startBtn.addEventListener('click', startApp);
-        els.scrollArea.addEventListener('scroll', updateScrollIndicator);
 
     </script>
 </body>
