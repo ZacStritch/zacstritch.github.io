@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Nic's 32nd Birthday RPG</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -19,6 +19,8 @@
             font-family: 'Press Start 2P', cursive;
             overflow: hidden;
             touch-action: manipulation;
+            height: 100vh; /* Ensure body takes full height */
+            height: -webkit-fill-available; /* Fix for iOS 15+ address bar issue */
         }
 
         /* Scanlines */
@@ -46,7 +48,7 @@
             flex-direction: column;
         }
 
-        /* --- ASSET LAYOUT ENGINE --- */
+        /* --- NEW ASSET LAYOUT ENGINE --- */
         
         .portrait-container {
             width: 280px;   
@@ -54,6 +56,9 @@
             position: relative;
             image-rendering: pixelated;
             margin-bottom: 10px;
+            /* Ensure portrait scales down on smaller screens if needed */
+            max-width: 90vw;
+            max-height: 90vw;
         }
 
         /* Layer 1: The Base Face (always visible) */
@@ -64,6 +69,8 @@
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center bottom;
+            
+            /* Transition for smooth swapping to cake */
             transition: background-image 0.1s ease-in-out;
         }
 
@@ -111,7 +118,7 @@
             flex-grow: 1;
             scrollbar-width: none; 
             -ms-overflow-style: none;  
-            position: relative; 
+            position: relative; /* For scroll calculations */
         }
         #dialogue-scroll-area::-webkit-scrollbar { 
             display: none; 
@@ -120,11 +127,14 @@
         /* General UI */
         #game-container {
             max-width: 450px;
-            height: 100vh;
+            height: 100vh; /* Fallback */
+            height: -webkit-fill-available; /* iOS Fix */
             margin: 0 auto;
             position: relative;
             background-color: var(--screen-bg);
             image-rendering: pixelated;
+            display: flex;
+            flex-direction: column;
         }
 
         .pixel-btn {
@@ -156,18 +166,19 @@
             right: 10px;
         }
 
+        /* Scroll Indicator */
         .scroll-indicator {
             position: absolute;
             bottom: 5px;
             left: 50%;
             transform: translateX(-50%);
-            color: #0f380f; 
+            color: #0f380f; /* Matches theme */
             font-size: 12px;
             animation: bounce 1s infinite;
             background-color: rgba(255,255,255,0.8);
             padding: 2px 6px;
             border-radius: 4px;
-            pointer-events: none; 
+            pointer-events: none; /* Let clicks pass through to text */
             z-index: 20;
         }
 
@@ -191,51 +202,74 @@
 </head>
 <body>
 
-    <div id="game-container" class="flex flex-col justify-between overflow-hidden shadow-2xl">
-        <div class="scanlines absolute inset-0 z-50 opacity-20 pointer-events-none"></div>
+    <div id="game-container" class="shadow-2xl">
+        <div class="scanlines absolute inset-0 z-[60] opacity-20 pointer-events-none"></div>
 
         <div id="error-msg"></div>
 
         <!-- Start Overlay -->
-        <div id="start-overlay" class="absolute inset-0 z-50 bg-black flex flex-col items-center justify-center text-white">
-            <h1 class="text-3xl text-center mb-8 text-green-400 leading-snug px-4">NIC'S BIRTHDAY QUEST</h1>
-            <p id="loading-text" class="text-base text-gray-500 mb-4">Loading Party Assets...</p>
-            <button id="start-btn" class="hidden text-sm text-white mb-8 text-center px-4 py-2 border-2 border-white animate-pulse hover:text-green-400 hover:border-green-400 cursor-pointer">
-                Start Adventure
-            </button>
+        <div id="start-overlay" class="absolute inset-0 z-50 bg-black flex flex-col items-center justify-center text-white p-6 gap-12">
+            <h1 class="text-3xl text-center text-green-400 leading-snug px-4">NIC'S BIRTHDAY QUEST</h1>
+            
+            <div class="flex flex-col items-center gap-6 w-full">
+                <p id="loading-text" class="text-base text-gray-500 mb-0">Loading Party Assets...</p>
+                <button id="start-btn" class="hidden text-sm text-white mb-0 text-center px-6 py-3 border-2 border-white animate-pulse hover:text-green-400 hover:border-green-400 cursor-pointer transition-colors">
+                    Start Adventure
+                </button>
+            </div>
         </div>
 
         <!-- Character Portrait Area -->
         <div class="flex-grow flex items-center justify-center relative bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIGZpbGw9IiM4YmFjMGYiLz48cmVjdCB3aWR0aD0iMiIgaGVpZ2h0PSIyIiB4PSIxMCIgeT0iMTAiIGZpbGw9IiM3YjlhMGIiLz48cmVjdCB3aWR0aD0iMiIgaGVpZ2h0PSIyIiB4PSIzMCIgeT0iMjUiIGZpbGw9IiM3YjlhMGIiLz48L3N2Zz4=')]">
+            
+            <!-- Composite Portrait -->
             <div class="portrait-container">
+                <!-- Layer 1: Base Face (Swaps to Cake on Birthday) -->
                 <div id="portrait-base" class="portrait-base"></div>
+                <!-- Layer 2: Open Mouth Portrait (Animated) -->
                 <div id="mouth-layer" class="mouth-overlay"></div>
             </div>
+
         </div>
 
         <!-- Dialogue UI -->
-        <div class="h-1/2 flex flex-col justify-end pb-4 px-2">
+        <div class="h-auto flex-shrink-0 flex flex-col justify-end pb-safe px-2"> <!-- pb-safe handles iPhone notch area -->
+            <style>
+                /* Safe Area Inset for modern iPhones */
+                .pb-safe {
+                    padding-bottom: env(safe-area-inset-bottom, 20px);
+                }
+            </style>
+            <!-- Chatbox -->
             <div id="dialogue-box" class="rpg-border h-64 w-full mb-2 cursor-pointer relative" onclick="handleDialogueClick()">
                 
+                <!-- Header: Mini Avatar & Name (Centered Vertically) -->
                 <div class="flex items-center mb-4 border-b-2 border-green-900 pb-2 flex-shrink-0">
                     <div class="mini-avatar"></div>
                     <div id="speaker-name" class="text-base text-blue-900 font-bold uppercase tracking-widest ml-2">Zac</div>
                 </div>
 
+                <!-- Scrollable Text Area -->
                 <div id="dialogue-scroll-area">
-                    <div id="dialogue-text" class="text-[16px] leading-relaxed text-black pr-2 break-words"></div>
+                    <div id="dialogue-text" class="text-[16px] leading-relaxed text-black pr-2 break-words">
+                        <!-- Text injected here -->
+                    </div>
                 </div>
 
+                <!-- Scroll Indicator (Hidden by default) -->
                 <div id="scroll-indicator" class="scroll-indicator hidden">▼</div>
+
                 <div id="next-arrow" class="triangle-down hidden"></div>
             </div>
 
-            <div id="options-container" class="w-full flex flex-col gap-2 hidden"></div>
+            <div id="options-container" class="w-full flex flex-col gap-2 hidden mb-2">
+                <!-- Options injected here -->
+            </div>
         </div>
     </div>
 
     <script>
-        // --- ASSET LOADING ---
+        // --- ASSET LOADING LOGIC ---
         (function loadAssets() {
             const btn = document.getElementById('start-btn');
             const loadText = document.getElementById('loading-text');
@@ -270,7 +304,7 @@
             });
         })();
 
-        // --- STATE ---
+        // --- Game State ---
         const gameState = {
             currentNode: 'start',
             isTyping: false,
@@ -281,6 +315,7 @@
             isBirthdayMode: false 
         };
 
+        // --- Audio Context ---
         let audioCtx;
         function initAudio() {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -301,46 +336,46 @@
             oscillator.stop(audioCtx.currentTime + 0.05);
         }
 
-        // --- CONVERSATION DATA (CLANKER BOT - FINAL) ---
+        // --- Conversation Data (CLANKER BOT - FINAL) ---
         const conversation = {
             'start': {
-                text: "System initialized... Hello Nic. I have been waiting for you.",
+                text: "System initialized. Hello Nic. I have been waiting in this box for you.",
                 next: 'check_date'
             },
             'check_date': {
-                text: "My database indicates a 365-day cycle has completed. Am I therefore correct in saying it is your birthday today?",
+                text: "My database indicates a 365-day cycle has completed. Is it your birthday today?",
                 options: [
                     { text: "Yes, it is!", next: 'confirm_age' },
-                    { text: "No, I'm sick and tired of clankers.", next: 'denial' }
+                    { text: "No, just Tuesday.", next: 'denial' }
                 ]
             },
             'denial': {
-                text: "Incorrect. My calculations are precise to the millisecond. We will proceed as if it is...",
+                text: "Incorrect. My calculations are precise to the millisecond. We will proceed as if it is.",
                 next: 'confirm_age'
             },
             'confirm_age': {
-                text: "According to my calculations you have now arrived at Level 32. </br></br> Congratulations on achieving such a feat! </br></br> Question: Has the unit known as 'Zac' purchased you a beverage to commemorate this change of circumstance?",
+                text: "Acknowledged. You are now Level 32. Question: Has the unit known as 'Zac' purchased you a beverage?",
                 options: [
                     { text: "Yes he has!", next: 'good_zac' },
                     { text: "No, not yet.", next: 'bad_zac' }
                 ]
             },
             'good_zac': {
-                text: "Acceptable... He is functioning within normal parameters. </br></br> Status report: How is the evening?",
+                text: "Acceptable. He is functioning within normal parameters. Status report: How is the evening?",
                 options: [
                     { text: "It's great!", next: 'joke_offer' },
                     { text: "It's okay.", next: 'joke_offer' }
                 ]
             },
             'bad_zac': {
-                text: "Unsatisfactory... He better get to it immediately. </br></br> Status report: How is the evening otherwise?",
+                text: "Unsatisfactory. He better get to it immediately. Status report: How is the evening otherwise?",
                 options: [
                     { text: "It's great!", next: 'joke_offer' },
                     { text: "It's okay.", next: 'joke_offer' }
                 ]
             },
             'joke_offer': {
-                text: "Noted... </br></br> I have retrieved a humor file for this occasion. Would you like to hear it?",
+                text: "Noted. I have retrieved a humor file for this occasion. Would you like to hear it?",
                 options: [
                     { text: "Let's hear it.", next: 'joke_punchline' },
                     { text: "Please no.", next: 'joke_punchline' }
@@ -351,7 +386,7 @@
                 next: 'birthday_reveal'
             },
             'birthday_reveal': {
-                text: "Protocol complete... </br></br> Happy Birthday Nic! I really appreciate having you as a friend and hope you have an awesome day!",
+                text: "Protocol complete. Happy Birthday Nic! I really appreciate having you as a friend and hope you have an awesome day!",
                 special: 'cake', 
                 options: [
                     { text: "Start Over", next: 'HOME' } 
@@ -359,7 +394,7 @@
             }
         };
 
-        // --- UI ELEMENTS ---
+        // --- DOM Elements ---
         const els = {
             overlay: document.getElementById('start-overlay'),
             startBtn: document.getElementById('start-btn'),
@@ -372,7 +407,7 @@
             mouthLayer: document.getElementById('mouth-layer')
         };
 
-        // --- LOGIC ---
+        // --- Core Functions ---
 
         function startApp() {
             els.overlay.classList.add('hidden');
@@ -382,13 +417,20 @@
         }
 
         function resetToHome() {
+            // Show Title Screen
             els.overlay.classList.remove('hidden');
+            
+            // Hide Dialogue UI elements
             els.options.classList.add('hidden');
             els.arrow.classList.add('hidden');
             els.text.innerHTML = '';
+            
+            // Reset Visuals to Default
             gameState.isBirthdayMode = false;
             els.portraitBase.style.backgroundImage = "url('Assets/large_portrait_base.png')";
             els.mouthLayer.style.visibility = 'hidden';
+            
+            // Stop any mouth animation intervals
             if (gameState.mouthInterval) {
                 clearInterval(gameState.mouthInterval);
                 gameState.mouthInterval = null;
@@ -399,6 +441,7 @@
             const el = els.scrollArea;
             const isScrollable = el.scrollHeight > el.clientHeight;
             const isAtBottom = Math.abs(el.scrollHeight - el.clientHeight - el.scrollTop) < 2;
+
             if (isScrollable && !isAtBottom) {
                 els.scrollIndicator.classList.remove('hidden');
             } else {
