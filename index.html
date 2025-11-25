@@ -40,8 +40,10 @@
             width: 100%;
             max-width: 480px;
             height: 100vh;
-            position: relative;   /* absolute children use this */
+            position: relative;
             image-rendering: pixelated;
+            box-sizing: border-box;
+            padding: 0 16px; /* horizontal padding */
         }
 
         /* Scanlines overlay */
@@ -66,7 +68,7 @@
         /* Portrait block – positioned near top in proportion to screen */
         .portrait-wrapper {
             position: absolute;
-            top: 10vh;                   /* proportion of screen height */
+            top: 10vh;
             left: 50%;
             transform: translateX(-50%);
             width: 100%;
@@ -130,9 +132,9 @@
         /* Dialogue + options block – anchored near bottom */
         .dialogue-wrapper {
             position: absolute;
-            left: 10px;
-            right: 10px;
-            bottom: 4vh;             /* proportionally from bottom */
+            left: 0;
+            right: 0;
+            bottom: 4vh;
             display: flex;
             flex-direction: column;
             gap: 6px;
@@ -171,13 +173,29 @@
             overflow: hidden;      /* no scroll – tap to advance line */
         }
 
+        /* MAIN IN-GAME TEXT SIZE (dialogue + options) */
         #dialogue-text {
             font-size: 18px;
             line-height: 1.5;
             color: #000;
-            padding-right: 0.4rem;
-            padding-bottom: 1.2rem;
+            padding: 0 0.75rem 1.2rem 0.75rem; /* horizontal padding added */
             word-break: break-word;
+        }
+
+        .pixel-btn {
+            background-color: white;
+            border: 3px solid black;
+            padding: 9px;
+            cursor: pointer;
+            text-align: left;
+            transition: transform 0.1s;
+            font-size: 18px;   /* match dialogue text size */
+            line-height: 1.4;
+        }
+
+        .pixel-btn:active {
+            transform: scale(0.98);
+            background-color: #f0f0f0;
         }
 
         .triangle-down {
@@ -199,22 +217,6 @@
         #options-container {
             display: none; /* flex column when active */
             width: 100%;
-        }
-
-        .pixel-btn {
-            background-color: white;
-            border: 3px solid black;
-            padding: 9px;
-            cursor: pointer;
-            text-align: left;
-            transition: transform 0.1s;
-            font-size: 16px;
-            line-height: 1.4;
-        }
-
-        .pixel-btn:active {
-            transform: scale(0.98);
-            background-color: #f0f0f0;
         }
 
         .hidden { display: none !important; }
@@ -260,7 +262,7 @@
                 line-height: 1.45;
             }
             .pixel-btn {
-                font-size: 14px;
+                font-size: 16px;
                 padding: 8px;
             }
             h1 {
@@ -269,7 +271,7 @@
         }
     </style>
 </head>
-<body class="bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIGZpbGw9IiM4YmFjMGYiLz48cmVjdCB3aWR0aD0iMiIgaGVpZ2h0PSIyIiB4PSIxMCIgeT0iMTAiIGZpbGw9IiM3YjlhMGIiLz48cmVjdCB3aWR0aD0iMiIgaGVpZ2h0PSIyIiB4PSIzMCIgeT0iMjUiIGZpbGw9IiM3YjlhMGIiLz48L3N2Zz4=')]">
+<body class="bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIGZpbGw9IiM4YmFjMGYiLz48cmVjdCB3aWR0aD0iMiIgaGVpZ2h0PSIyIiB4PSIxMCIgeT0iMTAiIGZpbGw9IiM3YjlhMGIiLz48cmVjdCB3aWR0aD0iMiIgaGVpZ2h0PSIyIiB4PSIzMCIgeT0iMjUiIGZpbGw9IiM3YjlhMGIiLz48L3N2Zz4=')"]>
 
 <div id="game-root">
     <div id="game-container" class="shadow-2xl">
