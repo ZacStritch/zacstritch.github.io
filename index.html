@@ -331,7 +331,7 @@
                     "Question: Has the unit known as 'Zac' purchased you a beverage to commemorate this change of circumstance?"
                 ],
                 options: [
-                    { text: "Yes he has!", next: 'good_zac' },
+                    { text: "Yes, he has!", next: 'good_zac' },
                     { text: "No, not yet.", next: 'bad_zac' }
                 ]
             },
@@ -497,8 +497,24 @@
             // Ensure complete text is shown
             els.text.innerHTML = gameState.fullText; 
 
-            // Show arrow to indicate "Tap to continue"
-            els.arrow.classList.remove('hidden');
+            // --- FIXED LOGIC HERE ---
+            // Check if we are on the LAST page of text for this node
+            const node = conversation[gameState.currentNode];
+            const textArray = Array.isArray(node.text) ? node.text : [node.text];
+            
+            if (gameState.pageIndex === textArray.length - 1) {
+                // If we are at the end AND there are options, show them now
+                if (node.options) {
+                    showOptions(node.options);
+                    els.arrow.classList.add('hidden');
+                } else {
+                    // No options (linear), show arrow
+                    els.arrow.classList.remove('hidden');
+                }
+            } else {
+                // Not the last page, show arrow to tap for next page
+                els.arrow.classList.remove('hidden');
+            }
         }
 
         function showOptions(options) {
@@ -538,10 +554,11 @@
                     els.arrow.classList.add('hidden'); // Hide arrow while typing
                     typeWriter(gameState.fullText, 0);
                 } else {
-                    // NO -> End of node. Show options or go to next node
+                    // NO -> End of node. 
+                    // If options exist, they are likely already shown by finishTyping(), 
+                    // but we can ensure arrow is hidden.
                     if (node.options) {
-                        els.arrow.classList.add('hidden');
-                        showOptions(node.options);
+                        // Do nothing, options visible.
                     } else if (node.next) {
                         loadNode(node.next);
                     }
