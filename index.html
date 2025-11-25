@@ -47,7 +47,6 @@
         #game-container {
             width: 100%;
             max-width: 450px;
-            /* Fill vertical space inside #game-root */
             height: 100%;
             display: flex;
             flex-direction: column;
@@ -82,21 +81,21 @@
             flex-direction: column;
         }
 
-        /* Portrait area – scales with viewport */
+        /* Portrait area – a bit smaller now */
         .portrait-wrapper {
-            flex: 0 0 45%;           /* ~45% of the screen */
-            min-height: 180px;
-            max-height: 320px;
+            flex: 0 0 30%;          /* was ~45% */
+            min-height: 120px;
+            max-height: 220px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
         .portrait-container {
-            width: min(60vw, 60vh);
-            height: min(60vw, 60vh);
-            max-width: 320px;
-            max-height: 320px;
+            width: min(40vw, 40vh); /* was 60vw/60vh */
+            height: min(40vw, 40vh);
+            max-width: 220px;
+            max-height: 220px;
             position: relative;
             image-rendering: pixelated;
             margin-bottom: 1.5vh;
@@ -126,16 +125,17 @@
             visibility: visible;
         }
 
+        /* Mini sprite smaller */
         .mini-avatar {
-            width: 40px;
-            height: 60px;
+            width: 32px;           /* was 40 */
+            height: 48px;          /* was 60 */
             background-image: url('Assets/small_sprite_full.png');
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center bottom;
             image-rendering: pixelated;
             display: inline-block;
-            margin-right: 12px;
+            margin-right: 10px;
             vertical-align: middle;
             animation: bob 1s ease-in-out infinite;
         }
@@ -147,7 +147,7 @@
 
         /* Dialogue area – bottom section */
         .dialogue-wrapper {
-            flex: 1 1 55%;
+            flex: 1 1 70%;
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
@@ -157,9 +157,8 @@
         }
 
         #dialogue-box {
-            /* Responsive height */
-            min-height: 32vh;
-            max-height: 40vh;
+            min-height: 36vh;      /* was 32vh-ish */
+            max-height: 60vh;      /* allow larger on tall screens */
             display: flex;
             flex-direction: column;
             cursor: pointer;
@@ -168,16 +167,22 @@
         #dialogue-text-area {
             flex: 1 1 auto;
             position: relative;
-            overflow: hidden;
+            overflow: hidden; /* no scrolling; we paginate instead */
         }
 
         #dialogue-text {
-            font-size: 14px;
-            line-height: 1.5;
+            font-size: 12px;
+            line-height: 1.45;
             color: #000;
             padding-right: 0.5rem;
             padding-bottom: 1.5rem;
             word-break: break-word;
+        }
+
+        @media (min-width: 768px) {
+            #dialogue-text {
+                font-size: 14px;
+            }
         }
 
         .pixel-btn {
@@ -346,7 +351,8 @@
         typingSpeed: 30,
         timeouts: [],
         mouthInterval: null,
-        isBirthdayMode: false
+        isBirthdayMode: false,
+        pages: [] // all pages for current node
     };
 
     let audioCtx;
@@ -367,6 +373,25 @@
         gainNode.connect(audioCtx.destination);
         oscillator.start();
         oscillator.stop(audioCtx.currentTime + 0.05);
+    }
+
+    // Split a long string into multiple pages so it fits in the box
+    function paginateText(text, maxChars = 110) {
+        const words = text.split(' ');
+        const pages = [];
+        let current = '';
+
+        for (const w of words) {
+            const candidate = current ? current + ' ' + w : w;
+            if (candidate.length > maxChars && current) {
+                pages.push(current);
+                current = w;
+            } else {
+                current = candidate;
+            }
+        }
+        if (current) pages.push(current);
+        return pages;
     }
 
     // --- CONVERSATION DATA ---
@@ -486,6 +511,8 @@
         els.arrow.classList.add('hidden');
         els.text.innerHTML = '';
         gameState.isBirthdayMode = false;
+        gameState.pages = [];
+        gameState.pageIndex = 0;
         els.portraitBase.style.backgroundImage = "url('Assets/large_portrait_base.png')";
         els.mouthLayer.style.visibility = 'hidden';
         if (gameState.mouthInterval) {
@@ -506,8 +533,10 @@
         gameState.currentNode = nodeId;
         gameState.pageIndex = 0;
 
-        const textData = Array.isArray(node.text) ? node.text : [node.text];
-        gameState.fullText = textData[0];
+        const rawTextArray = Array.isArray(node.text) ? node.text : [node.text];
+        // Flatten all dialogue lines into multiple pages
+        gameState.pages = rawTextArray.flatMap(t => paginateText(t, 110));
+        gameState.fullText = gameState.pages[0] || '';
 
         els.options.classList.add('hidden');
         els.arrow.classList.add('hidden');
@@ -526,7 +555,9 @@
             els.portraitBase.style.backgroundImage = "url('Assets/large_portrait_base.png')";
         }
 
-        typeWriter(gameState.fullText, 0);
+        if (gameState.fullText) {
+            typeWriter(gameState.fullText, 0);
+        }
     }
 
     function typeWriter(text, index) {
@@ -566,9 +597,8 @@
         els.text.innerHTML = gameState.fullText;
 
         const node = conversation[gameState.currentNode];
-        const textArray = Array.isArray(node.text) ? node.text : [node.text];
 
-        if (gameState.pageIndex === textArray.length - 1) {
+        if (gameState.pageIndex === gameState.pages.length - 1) {
             if (node.options) {
                 showOptions(node.options);
                 els.arrow.classList.add('hidden');
@@ -598,26 +628,25 @@
 
     function handleDialogueClick() {
         const node = conversation[gameState.currentNode];
-        const textArray = Array.isArray(node.text) ? node.text : [node.text];
 
         if (gameState.isTyping) {
             finishTyping();
             return;
         }
 
-        if (!gameState.isTyping) {
-            if (gameState.pageIndex < textArray.length - 1) {
-                gameState.pageIndex++;
-                gameState.fullText = textArray[gameState.pageIndex];
-                els.text.innerHTML = '';
-                els.arrow.classList.add('hidden');
-                typeWriter(gameState.fullText, 0);
-            } else {
-                if (node.options) {
-                    // Options visible
-                } else if (node.next) {
-                    loadNode(node.next);
-                }
+        // If there are more pages for this node, advance
+        if (gameState.pageIndex < gameState.pages.length - 1) {
+            gameState.pageIndex++;
+            gameState.fullText = gameState.pages[gameState.pageIndex];
+            els.text.innerHTML = '';
+            els.arrow.classList.add('hidden');
+            typeWriter(gameState.fullText, 0);
+        } else {
+            // Finished all pages; either show options or go to next node
+            if (node.options) {
+                // options already visible
+            } else if (node.next) {
+                loadNode(node.next);
             }
         }
     }
