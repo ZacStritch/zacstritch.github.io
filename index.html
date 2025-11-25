@@ -14,19 +14,19 @@
             --border-color: #306230;
         }
 
-        html {
-            height: -webkit-fill-available; /* Critical for Chrome iOS */
+        /* RESET: Ensure html/body take up full space without scrolling */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color);
+            overflow: hidden; /* Prevent dragging/bouncing on mobile */
+            touch-action: none; /* Disable default touch actions */
         }
 
         body {
-            background-color: var(--bg-color);
             font-family: 'Press Start 2P', cursive;
-            overflow: hidden;
-            touch-action: manipulation;
-            height: 100vh; /* Fallback */
-            height: 100dvh; 
-            height: -webkit-fill-available; /* Critical for Chrome iOS */
-            width: 100vw;
         }
 
         /* Scanlines */
@@ -56,11 +56,10 @@
 
         /* --- ASSET LAYOUT ENGINE --- */
         
-        /* Dynamic Portrait Sizing */
         .portrait-container {
-            width: 65vw;          /* Responsive width */
-            max-width: 280px;     /* Max desktop width */
-            aspect-ratio: 1 / 1;  /* Force square */
+            width: 65vw;          
+            max-width: 280px;     
+            aspect-ratio: 1 / 1;  
             position: relative;
             image-rendering: pixelated;
             margin-bottom: 2vh;
@@ -119,9 +118,11 @@
             overflow: hidden; 
         }
 
+        /* Main Container: Forced to 100dvh to fill mobile screens correctly */
         #game-container {
+            width: 100%;
             max-width: 450px;
-            height: 100%;      /* Inherits from body */
+            height: 100dvh; /* Force dynamic viewport height */
             margin: 0 auto;
             position: relative;
             background-color: var(--screen-bg);
@@ -138,7 +139,7 @@
             cursor: pointer;
             text-align: left;
             transition: transform 0.1s;
-            font-size: 14px; /* Slightly smaller for mobile safety */
+            font-size: 14px; 
             line-height: 1.4;
         }
 
@@ -147,7 +148,6 @@
             background-color: #f0f0f0;
         }
 
-        /* "Next" Arrow Indicator */
         .triangle-down {
             width: 0; 
             height: 0; 
@@ -186,7 +186,7 @@
 
         <div id="error-msg"></div>
 
-        <div id="start-overlay" class="absolute inset-0 z-50 bg-black flex flex-col items-center justify-center text-white p-6 gap-8">
+        <div id="start-overlay" class="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center text-white p-6 gap-8">
             <h1 class="text-2xl md:text-3xl text-center text-green-400 leading-snug px-4">NIC'S BIRTHDAY QUEST</h1>
             
             <div class="flex flex-col items-center gap-6 w-full">
@@ -212,7 +212,6 @@
             </style>
             
             <div id="dialogue-box" class="rpg-border h-56 md:h-64 w-full mb-2 cursor-pointer relative" onclick="handleDialogueClick()">
-                
                 <div class="flex items-center mb-4 border-b-2 border-green-900 pb-2 flex-shrink-0">
                     <div class="mini-avatar"></div>
                     <div id="speaker-name" class="text-sm md:text-base text-blue-900 font-bold uppercase tracking-widest ml-2">Zac</div>
@@ -400,7 +399,6 @@
         };
 
         // --- LOGIC ---
-
         function startApp() {
             els.overlay.classList.add('hidden');
             initAudio();
@@ -433,7 +431,6 @@
 
             gameState.currentNode = nodeId;
             gameState.pageIndex = 0;
-            
             const textData = Array.isArray(node.text) ? node.text : [node.text];
             gameState.fullText = textData[0];
 
@@ -441,7 +438,6 @@
             els.arrow.classList.add('hidden');
             els.text.innerHTML = '';
 
-            // Check Special Events (Cake)
             if (node.special === 'cake') {
                 gameState.isBirthdayMode = true;
                 els.portraitBase.style.backgroundImage = "url('Assets/base_birthday_cake.png')";
@@ -543,7 +539,7 @@
                     typeWriter(gameState.fullText, 0);
                 } else {
                     if (node.options) {
-                        // Do nothing, options visible.
+                        // Options visible
                     } else if (node.next) {
                         loadNode(node.next);
                     }
@@ -552,7 +548,6 @@
         }
 
         els.startBtn.addEventListener('click', startApp);
-
     </script>
 </body>
 </html>
