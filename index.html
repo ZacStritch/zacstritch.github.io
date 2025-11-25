@@ -73,6 +73,9 @@
             position: relative;
             image-rendering: pixelated;
             margin-bottom: 2vh;
+            /* FIX: Allow this container to shrink if vertical space is tight */
+            flex-shrink: 1;
+            min-height: 0;
         }
 
         /* Layer 1: The Base Face (always visible) */
@@ -220,7 +223,8 @@
         </div>
 
         <!-- Character Portrait Area -->
-        <div class="flex-grow flex items-center justify-center relative">
+        <!-- FIX: Added min-h-0 to allow shrinking if needed -->
+        <div class="flex-grow flex items-center justify-center relative min-h-0">
             
             <!-- Composite Portrait -->
             <div class="portrait-container">
@@ -235,7 +239,8 @@
         <!-- Dialogue UI -->
         <div class="h-auto flex-shrink-0 flex flex-col justify-end pb-safe px-2"> 
             <!-- Chatbox -->
-            <div id="dialogue-box" class="rpg-border h-64 w-full mb-2 cursor-pointer relative" onclick="handleDialogueClick()">
+            <!-- FIX: Reduced height to h-48 on mobile to leave room for buttons -->
+            <div id="dialogue-box" class="rpg-border h-48 md:h-64 w-full mb-2 cursor-pointer relative" onclick="handleDialogueClick()">
                 
                 <!-- Header: Mini Avatar & Name (Centered Vertically) -->
                 <div class="flex items-center mb-4 border-b-2 border-green-900 pb-2 flex-shrink-0">
@@ -426,7 +431,9 @@
             arrow: document.getElementById('next-arrow'),
             options: document.getElementById('options-container'),
             portraitBase: document.getElementById('portrait-base'),
-            mouthLayer: document.getElementById('mouth-layer')
+            mouthLayer: document.getElementById('mouth-layer'),
+            scrollArea: document.getElementById('dialogue-scroll-area'),
+            scrollIndicator: document.getElementById('scroll-indicator')
         };
 
         // --- LOGIC ---
