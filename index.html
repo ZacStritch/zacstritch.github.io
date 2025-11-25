@@ -27,19 +27,15 @@
             overflow: hidden;
         }
 
-        /* Main wrapper – full viewport, safe-area aware */
+        /* Main wrapper – full viewport */
         #game-root {
             width: 100%;
-            height: 100vh;
-            height: 100dvh; /* iOS Safari */
+            height: 100dvh; /* iOS Safari friendly */
             display: flex;
             justify-content: center;
             align-items: stretch;
             background: #8bac0f;
-            padding-left: env(safe-area-inset-left, 0);
-            padding-right: env(safe-area-inset-right, 0);
-            padding-top: env(safe-area-inset-top, 0);
-            padding-bottom: env(safe-area-inset-bottom, 0);
+            /* IMPORTANT FIX: no extra safe-area padding here */
         }
 
         #game-container {
@@ -148,7 +144,7 @@
             flex-direction: column;
             justify-content: flex-end;
             padding: 8px;
-            padding-bottom: calc(env(safe-area-inset-bottom, 0) + 10px);
+            padding-bottom: calc(env(safe-area-inset-bottom, 0) + 10px); /* safe area handled here */
             gap: 6px;
             min-height: 0;
         }
@@ -188,9 +184,9 @@
             letter-spacing: 0.1em;
         }
 
-        /* NEW: move sprite + name down from the top border */
+        /* Move sprite + name down from the top border */
         .dialogue-header-row {
-            padding-top: 12px;  /* increased from 6px */
+            padding-top: 12px;
             padding-bottom: 4px;
         }
 
@@ -267,6 +263,29 @@
 
         #start-btn {
             font-size: 14px;
+        }
+
+        /* EXTRA SAFETY: on very small phones, slightly shrink UI to avoid overflow */
+        @media (max-width: 380px) {
+            .portrait-wrapper {
+                flex: 0 0 30%;
+                min-height: 100px;
+            }
+            .portrait-container {
+                width: 55%;
+                max-width: 200px;
+            }
+            #dialogue-text {
+                font-size: 16px;
+                line-height: 1.45;
+            }
+            .pixel-btn {
+                font-size: 14px;
+                padding: 8px;
+            }
+            h1 {
+                font-size: 20px;
+            }
         }
     </style>
 </head>
@@ -642,7 +661,6 @@
             return;
         }
 
-        // If there are more lines for this node, advance
         if (gameState.lineIndex < gameState.currentLines.length - 1) {
             gameState.lineIndex++;
             gameState.fullText = gameState.currentLines[gameState.lineIndex];
@@ -650,7 +668,6 @@
             els.arrow.classList.add('hidden');
             typeWriter(gameState.fullText, 0);
         } else {
-            // Finished all lines; either show options or go to next node
             if (node.options) {
                 // options already visible
             } else if (node.next) {
