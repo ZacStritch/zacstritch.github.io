@@ -14,14 +14,24 @@
             --border-color: #306230;
         }
 
-        body {
-            background-color: var(--bg-color);
+        /* RESET: Ensure html/body take up full space without scrolling */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            /* FIX: Apply green bg here to eliminate black bars */
+            background-color: var(--screen-bg);
             font-family: 'Press Start 2P', cursive;
-            overflow: hidden;
-            touch-action: manipulation;
-            /* FIX: Use dynamic viewport height for modern mobile browsers */
-            height: 100dvh; 
-            width: 100vw;
+            overflow: hidden; /* Prevent dragging/bouncing on mobile */
+            touch-action: none; /* Disable default touch actions */
+        }
+
+        /* Mobile Height Fix for iOS Safari */
+        @supports (-webkit-touch-callout: none) {
+            html, body, #game-container {
+                height: -webkit-fill-available;
+            }
         }
 
         /* Scanlines */
@@ -52,15 +62,17 @@
         /* --- ASSET LAYOUT ENGINE --- */
         
         .portrait-container {
-            /* FIX: Changed from fixed 280px to responsive percentage/aspect ratio */
+            /* Responsive Sizing */
             width: auto;
             height: auto;
-            max-height: 30vh; /* Limit height so it doesn't push text off screen */
-            aspect-ratio: 1/1; /* Keep square */
+            /* Cap height at 40% of viewport to leave room for text */
+            max-height: 40vh; 
+            /* Cap width at 80% of viewport width */
+            max-width: 80vw;
+            aspect-ratio: 1 / 1;
             position: relative;
             image-rendering: pixelated;
-            margin-bottom: 10px;
-            max-width: 80vw;
+            margin-bottom: 2vh;
         }
 
         /* Layer 1: The Base Face (always visible) */
@@ -112,31 +124,25 @@
             50% { transform: translateY(-2px); }
         }
 
-        /* Text Box Styling */
-        #dialogue-scroll-area {
-            overflow-y: auto;
+        /* Text Box Styling - No Scrolling */
+        #dialogue-text-area {
             flex-grow: 1;
-            scrollbar-width: none; 
-            -ms-overflow-style: none;  
-            position: relative; /* For scroll calculations */
-        }
-        #dialogue-scroll-area::-webkit-scrollbar { 
-            display: none; 
+            position: relative; 
+            overflow: hidden; 
         }
 
-        /* General UI */
+        /* General UI Container */
         #game-container {
-            max-width: 450px;
-            /* FIX: Ensure container respects dynamic height */
-            height: 100dvh; 
+            width: 100%;
+            max-width: 450px; /* Keep width constrained on desktop */
+            height: 100%;     /* Fill body height */
             margin: 0 auto;
             position: relative;
-            background-color: var(--screen-bg);
+            /* Background is inherited visually from body, but kept here for context */
+            background-color: transparent; 
             image-rendering: pixelated;
             display: flex;
             flex-direction: column;
-            /* FIX: Clip children so they don't spill over rounded corners or edges */
-            overflow: hidden; 
         }
 
         .pixel-btn {
@@ -169,23 +175,6 @@
             z-index: 30;
         }
 
-        /* Scroll Indicator */
-        .scroll-indicator {
-            position: absolute;
-            bottom: 5px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: #0f380f; /* Matches theme */
-            font-size: 12px;
-            animation: bounce 1s infinite;
-            background-color: rgba(255,255,255,0.9);
-            padding: 4px 8px;
-            border-radius: 4px;
-            pointer-events: none; /* Let clicks pass through to text */
-            z-index: 20;
-            border: 1px solid #0f380f;
-        }
-
         @keyframes blink { 50% { opacity: 0; } }
         .hidden { display: none !important; }
         
@@ -205,14 +194,15 @@
 
         /* Safe Area Padding Utility */
         .pb-safe {
+            padding-bottom: 20px; /* Fallback */
             padding-bottom: env(safe-area-inset-bottom, 20px);
         }
     </style>
 </head>
-<body>
+<!-- FIX: Applied texture background to BODY so it covers the whole screen -->
+<body class="bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIGZpbGw9IiM4YmFjMGYiLz48cmVjdCB3aWR0aD0iMiIgaGVpZ2h0PSIyIiB4PSIxMCIgeT0iMTAiIGZpbGw9IiM3YjlhMGIiLz48cmVjdCB3aWR0aD0iMiIgaGVpZ2h0PSIyIiB4PSIzMCIgeT0iMjUiIGZpbGw9IiM3YjlhMGIiLz48L3N2Zz4=')]">
 
-    <!-- FIX: Moved the checkerboard pattern (bg-[url...]) to the main container so it covers everything -->
-    <div id="game-container" class="shadow-2xl bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIGZpbGw9IiM4YmFjMGYiLz48cmVjdCB3aWR0aD0iMiIgaGVpZ2h0PSIyIiB4PSIxMCIgeT0iMTAiIGZpbGw9IiM3YjlhMGIiLz48cmVjdCB3aWR0aD0iMiIgaGVpZ2h0PSIyIiB4PSIzMCIgeT0iMjUiIGZpbGw9IiM3YjlhMGIiLz48L3N2Zz4=')]">
+    <div id="game-container" class="shadow-2xl">
         <div class="scanlines absolute inset-0 z-[60] opacity-20 pointer-events-none"></div>
 
         <div id="error-msg"></div>
@@ -230,7 +220,6 @@
         </div>
 
         <!-- Character Portrait Area -->
-        <!-- Removed bg-[url] from here since it's now on the parent -->
         <div class="flex-grow flex items-center justify-center relative">
             
             <!-- Composite Portrait -->
@@ -254,15 +243,12 @@
                     <div id="speaker-name" class="text-base text-blue-900 font-bold uppercase tracking-widest ml-2">Zac</div>
                 </div>
 
-                <!-- Scrollable Text Area -->
-                <div id="dialogue-scroll-area">
+                <!-- Text Area -->
+                <div id="dialogue-text-area">
                     <div id="dialogue-text" class="text-[16px] leading-relaxed text-black pr-2 break-words pb-6">
                         <!-- Text injected here -->
                     </div>
                 </div>
-
-                <!-- Scroll Indicator (Hidden by default) -->
-                <div id="scroll-indicator" class="scroll-indicator hidden">▼</div>
 
                 <div id="next-arrow" class="triangle-down hidden"></div>
             </div>
@@ -274,7 +260,7 @@
     </div>
 
     <script>
-        // --- ASSET LOADING LOGIC ---
+        // --- ASSET LOADING ---
         (function loadAssets() {
             const btn = document.getElementById('start-btn');
             const loadText = document.getElementById('loading-text');
@@ -309,7 +295,7 @@
             });
         })();
 
-        // --- Game State ---
+        // --- STATE ---
         const gameState = {
             currentNode: 'start',
             pageIndex: 0, 
@@ -321,7 +307,6 @@
             isBirthdayMode: false 
         };
 
-        // --- Audio Context ---
         let audioCtx;
         function initAudio() {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -342,7 +327,7 @@
             oscillator.stop(audioCtx.currentTime + 0.05);
         }
 
-        // --- Conversation Data ---
+        // --- CONVERSATION DATA ---
         const conversation = {
             'start': {
                 text: [
@@ -441,9 +426,7 @@
             arrow: document.getElementById('next-arrow'),
             options: document.getElementById('options-container'),
             portraitBase: document.getElementById('portrait-base'),
-            mouthLayer: document.getElementById('mouth-layer'),
-            scrollArea: document.getElementById('dialogue-scroll-area'),
-            scrollIndicator: document.getElementById('scroll-indicator')
+            mouthLayer: document.getElementById('mouth-layer')
         };
 
         // --- LOGIC ---
@@ -469,17 +452,6 @@
             }
         }
 
-        function updateScrollIndicator() {
-            const el = els.scrollArea;
-            const isScrollable = el.scrollHeight > el.clientHeight;
-            const isAtBottom = Math.abs(el.scrollHeight - el.clientHeight - el.scrollTop) < 2;
-            if (isScrollable && !isAtBottom) {
-                els.scrollIndicator.classList.remove('hidden');
-            } else {
-                els.scrollIndicator.classList.add('hidden');
-            }
-        }
-
         function loadNode(nodeId) {
             if (nodeId === 'HOME') {
                 resetToHome();
@@ -498,10 +470,7 @@
             els.options.classList.add('hidden');
             els.arrow.classList.add('hidden');
             els.text.innerHTML = '';
-            els.scrollArea.scrollTop = 0;
-            updateScrollIndicator();
 
-            // Check Special Events (Cake)
             if (node.special === 'cake') {
                 gameState.isBirthdayMode = true;
                 els.portraitBase.style.backgroundImage = "url('Assets/base_birthday_cake.png')";
@@ -532,9 +501,6 @@
                 els.text.innerHTML += text.charAt(index);
                 if (index % 2 === 0) playBlip();
                 
-                els.scrollArea.scrollTop = els.scrollArea.scrollHeight;
-                updateScrollIndicator(); 
-
                 const timeoutId = setTimeout(() => {
                     typeWriter(text, index + 1);
                 }, gameState.typingSpeed);
@@ -556,14 +522,11 @@
             
             gameState.isTyping = false;
             els.text.innerHTML = gameState.fullText; 
-            updateScrollIndicator();
 
-            // --- PAGINATION / OPTION LOGIC ---
             const node = conversation[gameState.currentNode];
             const textArray = Array.isArray(node.text) ? node.text : [node.text];
             
             if (gameState.pageIndex === textArray.length - 1) {
-                // Last page: show options instantly
                 if (node.options) {
                     showOptions(node.options);
                     els.arrow.classList.add('hidden');
@@ -571,7 +534,6 @@
                     els.arrow.classList.remove('hidden');
                 }
             } else {
-                // Not last page: show arrow
                 els.arrow.classList.remove('hidden');
             }
         }
@@ -602,7 +564,6 @@
             }
 
             if (!gameState.isTyping) {
-                // If more pages exist, go to next
                 if (gameState.pageIndex < textArray.length - 1) {
                     gameState.pageIndex++;
                     gameState.fullText = textArray[gameState.pageIndex];
@@ -610,9 +571,8 @@
                     els.arrow.classList.add('hidden'); 
                     typeWriter(gameState.fullText, 0);
                 } else {
-                    // Last page finished
                     if (node.options) {
-                        // Options are already shown by finishTyping()
+                        // Options visible
                     } else if (node.next) {
                         loadNode(node.next);
                     }
@@ -621,7 +581,6 @@
         }
 
         els.startBtn.addEventListener('click', startApp);
-        els.scrollArea.addEventListener('scroll', updateScrollIndicator);
 
     </script>
 </body>
