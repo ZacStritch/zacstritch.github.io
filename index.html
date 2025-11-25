@@ -14,12 +14,18 @@
             --border-color: #306230;
         }
 
+        html {
+            height: -webkit-fill-available; /* Critical for Chrome iOS */
+        }
+
         body {
             background-color: var(--bg-color);
             font-family: 'Press Start 2P', cursive;
             overflow: hidden;
             touch-action: manipulation;
+            height: 100vh; /* Fallback */
             height: 100dvh; 
+            height: -webkit-fill-available; /* Critical for Chrome iOS */
             width: 100vw;
         }
 
@@ -50,14 +56,14 @@
 
         /* --- ASSET LAYOUT ENGINE --- */
         
+        /* Dynamic Portrait Sizing */
         .portrait-container {
-            width: 280px;   
-            height: 280px;  
+            width: 65vw;          /* Responsive width */
+            max-width: 280px;     /* Max desktop width */
+            aspect-ratio: 1 / 1;  /* Force square */
             position: relative;
             image-rendering: pixelated;
-            margin-bottom: 10px;
-            max-width: 90vw;
-            max-height: 90vw;
+            margin-bottom: 2vh;
         }
 
         .portrait-base {
@@ -74,7 +80,7 @@
             position: absolute;
             top: 0; 
             left: 0;
-            width: 100%;   
+            width: 100%;    
             height: 100%;
             background-image: url('Assets/large_portrait_mouth_open.png');
             background-size: contain;
@@ -110,12 +116,12 @@
         #dialogue-text-area {
             flex-grow: 1;
             position: relative; 
-            overflow: hidden; /* Hide overflow if it happens, though pagination prevents it */
+            overflow: hidden; 
         }
 
         #game-container {
             max-width: 450px;
-            height: 100dvh; 
+            height: 100%;      /* Inherits from body */
             margin: 0 auto;
             position: relative;
             background-color: var(--screen-bg);
@@ -132,7 +138,7 @@
             cursor: pointer;
             text-align: left;
             transition: transform 0.1s;
-            font-size: 15px; 
+            font-size: 14px; /* Slightly smaller for mobile safety */
             line-height: 1.4;
         }
 
@@ -180,19 +186,17 @@
 
         <div id="error-msg"></div>
 
-        <!-- Start Overlay -->
-        <div id="start-overlay" class="absolute inset-0 z-50 bg-black flex flex-col items-center justify-center text-white p-6 gap-12">
-            <h1 class="text-3xl text-center text-green-400 leading-snug px-4">NIC'S BIRTHDAY QUEST</h1>
+        <div id="start-overlay" class="absolute inset-0 z-50 bg-black flex flex-col items-center justify-center text-white p-6 gap-8">
+            <h1 class="text-2xl md:text-3xl text-center text-green-400 leading-snug px-4">NIC'S BIRTHDAY QUEST</h1>
             
             <div class="flex flex-col items-center gap-6 w-full">
-                <p id="loading-text" class="text-base text-gray-500 mb-0">Loading Party Assets...</p>
-                <button id="start-btn" class="hidden text-sm text-white mb-0 text-center px-6 py-3 border-2 border-white animate-pulse hover:text-green-400 hover:border-green-400 cursor-pointer transition-colors">
+                <p id="loading-text" class="text-sm text-gray-500 mb-0">Loading Party Assets...</p>
+                <button id="start-btn" class="hidden text-xs md:text-sm text-white mb-0 text-center px-6 py-4 border-2 border-white animate-pulse hover:text-green-400 hover:border-green-400 cursor-pointer transition-colors">
                     Start Adventure
                 </button>
             </div>
         </div>
 
-        <!-- Character Portrait Area -->
         <div class="flex-grow flex items-center justify-center relative bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIGZpbGw9IiM4YmFjMGYiLz48cmVjdCB3aWR0aD0iMiIgaGVpZ2h0PSIyIiB4PSIxMCIgeT0iMTAiIGZpbGw9IiM3YjlhMGIiLz48cmVjdCB3aWR0aD0iMiIgaGVpZ2h0PSIyIiB4PSIzMCIgeT0iMjUiIGZpbGw9IiM3YjlhMGIiLz48L3N2Zz4=')]">
             <div class="portrait-container">
                 <div id="portrait-base" class="portrait-base"></div>
@@ -200,24 +204,22 @@
             </div>
         </div>
 
-        <!-- Dialogue UI -->
-        <div class="h-auto flex-shrink-0 flex flex-col justify-end pb-safe px-2"> 
+        <div class="flex-shrink-0 flex flex-col justify-end pb-safe px-2"> 
             <style>
                 .pb-safe {
-                    padding-bottom: env(safe-area-inset-bottom, 30px);
+                    padding-bottom: env(safe-area-inset-bottom, 20px);
                 }
             </style>
             
-            <div id="dialogue-box" class="rpg-border h-64 w-full mb-2 cursor-pointer relative" onclick="handleDialogueClick()">
+            <div id="dialogue-box" class="rpg-border h-56 md:h-64 w-full mb-2 cursor-pointer relative" onclick="handleDialogueClick()">
                 
                 <div class="flex items-center mb-4 border-b-2 border-green-900 pb-2 flex-shrink-0">
                     <div class="mini-avatar"></div>
-                    <div id="speaker-name" class="text-base text-blue-900 font-bold uppercase tracking-widest ml-2">Zac</div>
+                    <div id="speaker-name" class="text-sm md:text-base text-blue-900 font-bold uppercase tracking-widest ml-2">Zac</div>
                 </div>
 
                 <div id="dialogue-text-area">
-                    <!-- Text will be injected here -->
-                    <div id="dialogue-text" class="text-[16px] leading-relaxed text-black pr-2 break-words pb-6"></div>
+                    <div id="dialogue-text" class="text-[14px] md:text-[16px] leading-relaxed text-black pr-2 break-words pb-6"></div>
                 </div>
 
                 <div id="next-arrow" class="triangle-down hidden"></div>
@@ -266,7 +268,7 @@
         // --- STATE ---
         const gameState = {
             currentNode: 'start',
-            pageIndex: 0, // Tracks which "page" of text we are on
+            pageIndex: 0,
             isTyping: false,
             fullText: '',
             typingSpeed: 30, 
@@ -295,8 +297,7 @@
             oscillator.stop(audioCtx.currentTime + 0.05);
         }
 
-        // --- CONVERSATION DATA (PAGINATED) ---
-        // Each 'text' is now an array of strings. Each string is one "screen" of text.
+        // --- CONVERSATION DATA ---
         const conversation = {
             'start': {
                 text: [
@@ -431,11 +432,8 @@
             if (!node) return;
 
             gameState.currentNode = nodeId;
-            // Always start at page 0 of the new node
             gameState.pageIndex = 0;
             
-            // Get the first page of text
-            // Ensure we handle both string (legacy) and array (new) just in case, though all are arrays now
             const textData = Array.isArray(node.text) ? node.text : [node.text];
             gameState.fullText = textData[0];
 
@@ -494,25 +492,19 @@
             els.mouthLayer.classList.remove('mouth-open');
             
             gameState.isTyping = false;
-            // Ensure complete text is shown
             els.text.innerHTML = gameState.fullText; 
 
-            // --- FIXED LOGIC HERE ---
-            // Check if we are on the LAST page of text for this node
             const node = conversation[gameState.currentNode];
             const textArray = Array.isArray(node.text) ? node.text : [node.text];
             
             if (gameState.pageIndex === textArray.length - 1) {
-                // If we are at the end AND there are options, show them now
                 if (node.options) {
                     showOptions(node.options);
                     els.arrow.classList.add('hidden');
                 } else {
-                    // No options (linear), show arrow
                     els.arrow.classList.remove('hidden');
                 }
             } else {
-                // Not the last page, show arrow to tap for next page
                 els.arrow.classList.remove('hidden');
             }
         }
@@ -537,26 +529,19 @@
             const node = conversation[gameState.currentNode];
             const textArray = Array.isArray(node.text) ? node.text : [node.text];
 
-            // 1. If typing, instant finish
             if (gameState.isTyping) {
                 finishTyping();
                 return;
             }
 
-            // 2. If finished typing current page...
             if (!gameState.isTyping) {
-                // Are there more pages in this node?
                 if (gameState.pageIndex < textArray.length - 1) {
-                    // YES -> Go to next page
                     gameState.pageIndex++;
                     gameState.fullText = textArray[gameState.pageIndex];
-                    els.text.innerHTML = ''; // Clear box
-                    els.arrow.classList.add('hidden'); // Hide arrow while typing
+                    els.text.innerHTML = ''; 
+                    els.arrow.classList.add('hidden'); 
                     typeWriter(gameState.fullText, 0);
                 } else {
-                    // NO -> End of node. 
-                    // If options exist, they are likely already shown by finishTyping(), 
-                    // but we can ensure arrow is hidden.
                     if (node.options) {
                         // Do nothing, options visible.
                     } else if (node.next) {
