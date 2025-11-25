@@ -14,24 +14,19 @@
             --border-color: #306230;
         }
 
-        /* RESET: Ensure html/body take up full space without scrolling */
+        /* RESET: Strong reset to prevent iOS bouncing/scrolling issues */
         html, body {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
-            /* FIX: Apply green bg here to eliminate black bars */
             background-color: var(--screen-bg);
             font-family: 'Press Start 2P', cursive;
-            overflow: hidden; /* Prevent dragging/bouncing on mobile */
-            touch-action: none; /* Disable default touch actions */
-        }
-
-        /* Mobile Height Fix for iOS Safari */
-        @supports (-webkit-touch-callout: none) {
-            html, body, #game-container {
-                height: -webkit-fill-available;
-            }
+            overflow: hidden; 
+            touch-action: none; 
+            /* FIX: Lock the body to the viewport to prevent "spill" */
+            position: fixed; 
+            inset: 0;
         }
 
         /* Scanlines */
@@ -62,23 +57,20 @@
         /* --- ASSET LAYOUT ENGINE --- */
         
         .portrait-container {
-            /* Responsive Sizing */
-            width: auto;
-            height: auto;
-            /* Cap height at 40% of viewport to leave room for text */
-            max-height: 40vh; 
-            /* Cap width at 80% of viewport width */
+            /* FIX: Explicit height ensures it never collapses to 0px */
+            height: 35vh; 
+            width: 35vh;
+            /* Constraints to keep it fitting on screens */
             max-width: 80vw;
-            aspect-ratio: 1 / 1;
+            max-height: 80vw;
+            
             position: relative;
             image-rendering: pixelated;
             margin-bottom: 2vh;
-            /* FIX: Allow this container to shrink if vertical space is tight */
-            flex-shrink: 1;
+            flex-shrink: 1; /* Allow shrinking if screen is tiny */
             min-height: 0;
         }
 
-        /* Layer 1: The Base Face (always visible) */
         .portrait-base {
             width: 100%;
             height: 100%;
@@ -89,7 +81,6 @@
             transition: background-image 0.1s ease-in-out;
         }
 
-        /* Layer 2: The Open Mouth Portrait (toggles visibility) */
         .mouth-overlay {
             position: absolute;
             top: 0; 
@@ -107,7 +98,6 @@
             visibility: visible;
         }
 
-        /* Mini Avatar (Bottom Left of Dialogue) */
         .mini-avatar {
             width: 40px;  
             height: 60px; 
@@ -137,11 +127,10 @@
         /* General UI Container */
         #game-container {
             width: 100%;
-            max-width: 450px; /* Keep width constrained on desktop */
-            height: 100%;     /* Fill body height */
+            max-width: 450px;
+            height: 100%; /* Fills the fixed body */
             margin: 0 auto;
             position: relative;
-            /* Background is inherited visually from body, but kept here for context */
             background-color: transparent; 
             image-rendering: pixelated;
             display: flex;
@@ -202,7 +191,7 @@
         }
     </style>
 </head>
-<!-- FIX: Applied texture background to BODY so it covers the whole screen -->
+<!-- FIX: Texture applied to BODY so the whole screen is green, preventing black bars -->
 <body class="bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIGZpbGw9IiM4YmFjMGYiLz48cmVjdCB3aWR0aD0iMiIgaGVpZ2h0PSIyIiB4PSIxMCIgeT0iMTAiIGZpbGw9IiM3YjlhMGIiLz48cmVjdCB3aWR0aD0iMiIgaGVpZ2h0PSIyIiB4PSIzMCIgeT0iMjUiIGZpbGw9IiM3YjlhMGIiLz48L3N2Zz4=')]">
 
     <div id="game-container" class="shadow-2xl">
@@ -222,27 +211,20 @@
             </div>
         </div>
 
-        <!-- Character Portrait Area -->
-        <!-- FIX: Added min-h-0 to allow shrinking if needed -->
-        <div class="flex-grow flex items-center justify-center relative min-h-0">
-            
-            <!-- Composite Portrait -->
+        <!-- Character Portrait Area (Top Half - Flexible) -->
+        <div class="flex-1 flex items-center justify-center relative min-h-0">
             <div class="portrait-container">
-                <!-- Layer 1: Base Face (Swaps to Cake on Birthday) -->
                 <div id="portrait-base" class="portrait-base"></div>
-                <!-- Layer 2: Open Mouth Portrait (Animated) -->
                 <div id="mouth-layer" class="mouth-overlay"></div>
             </div>
-
         </div>
 
-        <!-- Dialogue UI -->
-        <div class="h-auto flex-shrink-0 flex flex-col justify-end pb-safe px-2"> 
+        <!-- Dialogue UI (Bottom Half - Fixed Height, shrinks if needed) -->
+        <div class="flex-none flex flex-col justify-end pb-safe px-2"> 
             <!-- Chatbox -->
-            <!-- FIX: Reduced height to h-48 on mobile to leave room for buttons -->
             <div id="dialogue-box" class="rpg-border h-48 md:h-64 w-full mb-2 cursor-pointer relative" onclick="handleDialogueClick()">
                 
-                <!-- Header: Mini Avatar & Name (Centered Vertically) -->
+                <!-- Header -->
                 <div class="flex items-center mb-4 border-b-2 border-green-900 pb-2 flex-shrink-0">
                     <div class="mini-avatar"></div>
                     <div id="speaker-name" class="text-base text-blue-900 font-bold uppercase tracking-widest ml-2">Zac</div>
