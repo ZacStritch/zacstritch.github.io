@@ -19,7 +19,7 @@
             font-family: 'Press Start 2P', cursive;
             overflow: hidden;
             touch-action: manipulation;
-            /* FIX: Use dynamic viewport height for mobile browsers */
+            /* Mobile Safari/Chrome height fix */
             height: 100dvh; 
             width: 100vw;
         }
@@ -49,7 +49,7 @@
             flex-direction: column;
         }
 
-        /* --- NEW ASSET LAYOUT ENGINE --- */
+        /* --- ASSET LAYOUT ENGINE --- */
         
         .portrait-container {
             width: 280px;   
@@ -57,7 +57,7 @@
             position: relative;
             image-rendering: pixelated;
             margin-bottom: 10px;
-            /* Ensure portrait scales down on smaller screens if needed */
+            /* Ensure portrait scales down on smaller screens */
             max-width: 90vw;
             max-height: 90vw;
         }
@@ -119,7 +119,7 @@
             flex-grow: 1;
             scrollbar-width: none; 
             -ms-overflow-style: none;  
-            position: relative; /* For scroll calculations */
+            position: relative; 
         }
         #dialogue-scroll-area::-webkit-scrollbar { 
             display: none; 
@@ -128,7 +128,7 @@
         /* General UI */
         #game-container {
             max-width: 450px;
-            /* FIX: Use dynamic viewport height to prevent bottom cutoff */
+            /* Use dynamic height to fit mobile browser bars */
             height: 100dvh; 
             margin: 0 auto;
             position: relative;
@@ -165,7 +165,7 @@
             position: absolute;
             bottom: 10px;
             right: 10px;
-            z-index: 30; /* Ensure it sits on top */
+            z-index: 30;
         }
 
         /* Scroll Indicator */
@@ -174,13 +174,13 @@
             bottom: 5px;
             left: 50%;
             transform: translateX(-50%);
-            color: #0f380f; /* Matches theme */
+            color: #0f380f; 
             font-size: 12px;
             animation: bounce 1s infinite;
             background-color: rgba(255,255,255,0.9);
-            padding: 4px 8px; /* Slightly bigger touch target visually */
+            padding: 4px 8px;
             border-radius: 4px;
-            pointer-events: none; /* Let clicks pass through to text */
+            pointer-events: none; 
             z-index: 20;
             border: 1px solid #0f380f;
         }
@@ -206,6 +206,7 @@
 <body>
 
     <div id="game-container" class="shadow-2xl">
+        <!-- Z-index 60 to sit above start screen -->
         <div class="scanlines absolute inset-0 z-[60] opacity-20 pointer-events-none"></div>
 
         <div id="error-msg"></div>
@@ -225,51 +226,39 @@
         <!-- Character Portrait Area -->
         <div class="flex-grow flex items-center justify-center relative bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIGZpbGw9IiM4YmFjMGYiLz48cmVjdCB3aWR0aD0iMiIgaGVpZ2h0PSIyIiB4PSIxMCIgeT0iMTAiIGZpbGw9IiM3YjlhMGIiLz48cmVjdCB3aWR0aD0iMiIgaGVpZ2h0PSIyIiB4PSIzMCIgeT0iMjUiIGZpbGw9IiM3YjlhMGIiLz48L3N2Zz4=')]">
             
-            <!-- Composite Portrait -->
             <div class="portrait-container">
-                <!-- Layer 1: Base Face (Swaps to Cake on Birthday) -->
                 <div id="portrait-base" class="portrait-base"></div>
-                <!-- Layer 2: Open Mouth Portrait (Animated) -->
                 <div id="mouth-layer" class="mouth-overlay"></div>
             </div>
 
         </div>
 
-        <!-- Dialogue UI -->
-        <div class="h-auto flex-shrink-0 flex flex-col justify-end pb-safe px-2"> <!-- pb-safe handles iPhone notch area -->
+        <!-- Dialogue UI with Safe Area Padding -->
+        <div class="h-auto flex-shrink-0 flex flex-col justify-end pb-safe px-2"> 
             <style>
-                /* Safe Area Inset for modern iPhones */
                 .pb-safe {
-                    /* FIX: Increased fallback padding to 30px to ensure bottom isn't cut off */
+                    /* Padding to avoid home bar overlap */
                     padding-bottom: env(safe-area-inset-bottom, 30px);
                 }
             </style>
             <!-- Chatbox -->
             <div id="dialogue-box" class="rpg-border h-64 w-full mb-2 cursor-pointer relative" onclick="handleDialogueClick()">
                 
-                <!-- Header: Mini Avatar & Name (Centered Vertically) -->
                 <div class="flex items-center mb-4 border-b-2 border-green-900 pb-2 flex-shrink-0">
                     <div class="mini-avatar"></div>
                     <div id="speaker-name" class="text-base text-blue-900 font-bold uppercase tracking-widest ml-2">Zac</div>
                 </div>
 
-                <!-- Scrollable Text Area -->
                 <div id="dialogue-scroll-area">
-                    <!-- FIX: Added pb-6 to prevent text from overlapping with bottom arrows -->
-                    <div id="dialogue-text" class="text-[16px] leading-relaxed text-black pr-2 break-words pb-6">
-                        <!-- Text injected here -->
-                    </div>
+                    <!-- Added padding-bottom (pb-6) to text to clear the arrow indicator -->
+                    <div id="dialogue-text" class="text-[16px] leading-relaxed text-black pr-2 break-words pb-6"></div>
                 </div>
 
-                <!-- Scroll Indicator (Hidden by default) -->
                 <div id="scroll-indicator" class="scroll-indicator hidden">▼</div>
-
                 <div id="next-arrow" class="triangle-down hidden"></div>
             </div>
 
-            <div id="options-container" class="w-full flex flex-col gap-2 hidden mb-2">
-                <!-- Options injected here -->
-            </div>
+            <div id="options-container" class="w-full flex flex-col gap-2 hidden mb-2"></div>
         </div>
     </div>
 
@@ -341,46 +330,46 @@
             oscillator.stop(audioCtx.currentTime + 0.05);
         }
 
-        // --- Conversation Data (CLANKER BOT - FINAL) ---
+        // --- Conversation Data (Restored Clanker Persona) ---
         const conversation = {
             'start': {
-                text: "System initialized. Hello Nic. I have been waiting in this box for you.",
+                text: "System initialized... Hello Nic. I have been waiting for you.",
                 next: 'check_date'
             },
             'check_date': {
-                text: "My database indicates a 365-day cycle has completed. Is it your birthday today?",
+                text: "My database indicates a 365-day cycle has completed. Am I therefore correct in saying it is your birthday today?",
                 options: [
                     { text: "Yes, it is!", next: 'confirm_age' },
-                    { text: "No, just Tuesday.", next: 'denial' }
+                    { text: "No, I'm sick and tired of clankers.", next: 'denial' }
                 ]
             },
             'denial': {
-                text: "Incorrect. My calculations are precise to the millisecond. We will proceed as if it is.",
+                text: "Incorrect. My calculations are precise to the millisecond. We will proceed as if it is...",
                 next: 'confirm_age'
             },
             'confirm_age': {
-                text: "Acknowledged. You are now Level 32. Question: Has the unit known as 'Zac' purchased you a beverage?",
+                text: "According to my calculations you have now arrived at Level 32. <br><br> Congratulations on achieving such a feat! <br><br> Question: Has the unit known as 'Zac' purchased you a beverage to commemorate this change of circumstance?",
                 options: [
                     { text: "Yes he has!", next: 'good_zac' },
                     { text: "No, not yet.", next: 'bad_zac' }
                 ]
             },
             'good_zac': {
-                text: "Acceptable. He is functioning within normal parameters. Status report: How is the evening?",
+                text: "Acceptable... He is functioning within normal parameters. <br><br> Status report: How is the evening?",
                 options: [
                     { text: "It's great!", next: 'joke_offer' },
                     { text: "It's okay.", next: 'joke_offer' }
                 ]
             },
             'bad_zac': {
-                text: "Unsatisfactory. He better get to it immediately. Status report: How is the evening otherwise?",
+                text: "Unsatisfactory... He better get to it immediately. <br><br> Status report: How is the evening otherwise?",
                 options: [
                     { text: "It's great!", next: 'joke_offer' },
                     { text: "It's okay.", next: 'joke_offer' }
                 ]
             },
             'joke_offer': {
-                text: "Noted. I have retrieved a humor file for this occasion. Would you like to hear it?",
+                text: "Noted... <br><br> I have retrieved a humor file for this occasion. Would you like to hear it?",
                 options: [
                     { text: "Let's hear it.", next: 'joke_punchline' },
                     { text: "Please no.", next: 'joke_punchline' }
@@ -391,7 +380,7 @@
                 next: 'birthday_reveal'
             },
             'birthday_reveal': {
-                text: "Protocol complete. Happy Birthday Nic! I really appreciate having you as a friend and hope you have an awesome day!",
+                text: "Protocol complete... <br><br> Happy Birthday Nic! I really appreciate having you as a friend and hope you have an awesome day!",
                 special: 'cake', 
                 options: [
                     { text: "Start Over", next: 'HOME' } 
@@ -422,19 +411,13 @@
         }
 
         function resetToHome() {
-            // Show Title Screen
             els.overlay.classList.remove('hidden');
-            
-            // Hide Dialogue UI elements
             els.options.classList.add('hidden');
             els.arrow.classList.add('hidden');
             els.text.innerHTML = '';
-            
-            // Reset Visuals to Default
             gameState.isBirthdayMode = false;
             els.portraitBase.style.backgroundImage = "url('Assets/large_portrait_base.png')";
             els.mouthLayer.style.visibility = 'hidden';
-            
             if (gameState.mouthInterval) {
                 clearInterval(gameState.mouthInterval);
                 gameState.mouthInterval = null;
@@ -497,7 +480,26 @@
             }
 
             if (index < text.length) {
-                els.text.innerHTML += text.charAt(index);
+                const char = text.charAt(index);
+
+                // HTML Tag Handling: Add whole tag at once
+                if (char === '<') {
+                    let tag = '';
+                    // Look ahead for the closing >
+                    while (text.charAt(index) !== '>' && index < text.length) {
+                        tag += text.charAt(index);
+                        index++;
+                    }
+                    tag += '>';
+                    index++; // Move past the >
+                    els.text.innerHTML += tag;
+                    
+                    // Recurse immediately to next char (no delay)
+                    typeWriter(text, index, nodeData);
+                    return;
+                }
+
+                els.text.innerHTML += char;
                 if (index % 2 === 0) playBlip();
                 
                 els.scrollArea.scrollTop = els.scrollArea.scrollHeight;
