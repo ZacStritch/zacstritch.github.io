@@ -52,14 +52,15 @@
         /* --- ASSET LAYOUT ENGINE --- */
         
         .portrait-container {
-            width: 240px;   
-            height: 240px;  
+            /* FIX: Changed from fixed 280px to responsive percentage/aspect ratio */
+            width: auto;
+            height: auto;
+            max-height: 30vh; /* Limit height so it doesn't push text off screen */
+            aspect-ratio: 1/1; /* Keep square */
             position: relative;
             image-rendering: pixelated;
             margin-bottom: 10px;
-            /* Ensure portrait scales down on smaller screens if needed */
-            max-width: 90vw;
-            max-height: 90vw;
+            max-width: 80vw;
         }
 
         /* Layer 1: The Base Face (always visible) */
@@ -134,6 +135,8 @@
             image-rendering: pixelated;
             display: flex;
             flex-direction: column;
+            /* FIX: Clip children so they don't spill over rounded corners or edges */
+            overflow: hidden; 
         }
 
         .pixel-btn {
@@ -208,15 +211,13 @@
 </head>
 <body>
 
-    <div id="game-container" class="shadow-2xl">
+    <!-- FIX: Moved the checkerboard pattern (bg-[url...]) to the main container so it covers everything -->
+    <div id="game-container" class="shadow-2xl bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIGZpbGw9IiM4YmFjMGYiLz48cmVjdCB3aWR0aD0iMiIgaGVpZ2h0PSIyIiB4PSIxMCIgeT0iMTAiIGZpbGw9IiM3YjlhMGIiLz48cmVjdCB3aWR0aD0iMiIgaGVpZ2h0PSIyIiB4PSIzMCIgeT0iMjUiIGZpbGw9IiM3YjlhMGIiLz48L3N2Zz4=')]">
         <div class="scanlines absolute inset-0 z-[60] opacity-20 pointer-events-none"></div>
 
         <div id="error-msg"></div>
 
-        <!-- Start Overlay FIX: -->
-        <!-- 1. Use h-dvh to match container height exactly -->
-        <!-- 2. Reduced gap to 'gap-8' to pull items closer -->
-        <!-- 3. Added pb-safe to ensure button is above home bar -->
+        <!-- Start Overlay -->
         <div id="start-overlay" class="absolute inset-0 z-50 bg-black flex flex-col items-center justify-center text-white p-6 gap-8 pb-safe">
             <h1 class="text-3xl text-center text-green-400 leading-snug px-4">NIC'S BIRTHDAY QUEST</h1>
             
@@ -229,7 +230,8 @@
         </div>
 
         <!-- Character Portrait Area -->
-        <div class="flex-grow flex items-center justify-center relative bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIGZpbGw9IiM4YmFjMGYiLz48cmVjdCB3aWR0aD0iMiIgaGVpZ2h0PSIyIiB4PSIxMCIgeT0iMTAiIGZpbGw9IiM3YjlhMGIiLz48cmVjdCB3aWR0aD0iMiIgaGVpZ2h0PSIyIiB4PSIzMCIgeT0iMjUiIGZpbGw9IiM3YjlhMGIiLz48L3N2Zz4=')]">
+        <!-- Removed bg-[url] from here since it's now on the parent -->
+        <div class="flex-grow flex items-center justify-center relative">
             
             <!-- Composite Portrait -->
             <div class="portrait-container">
