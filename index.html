@@ -24,27 +24,23 @@
         body {
             background-color: var(--screen-bg);
             font-family: 'Press Start 2P', cursive;
-            overflow: hidden;
+            overflow: hidden; /* no scroll */
         }
 
-        /* Main wrapper – full viewport */
+        /* Main wrapper – simple 100vh */
         #game-root {
             width: 100%;
-            height: 100dvh; /* iOS Safari friendly */
+            height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: stretch;
             background: #8bac0f;
-            /* IMPORTANT FIX: no extra safe-area padding here */
         }
 
         #game-container {
             width: 100%;
             max-width: 480px;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            position: relative;
+            height: 100vh;
+            position: relative;   /* absolute children use this */
             image-rendering: pixelated;
         }
 
@@ -61,33 +57,27 @@
             pointer-events: none;
         }
 
-        /* RPG dialogue border */
-        .rpg-border {
-            border: 3px solid var(--pixel-black);
-            border-radius: 4px;
-            background-color: white;
-            position: relative;
-            box-shadow:
-                inset 0 0 0 3px #8bac0f,
-                inset 0 0 0 6px var(--pixel-black);
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
+        /* Start overlay fills container */
+        #start-overlay {
+            position: absolute;
+            inset: 0;
         }
 
-        /* Portrait = top third */
+        /* Portrait block – positioned near top in proportion to screen */
         .portrait-wrapper {
-            flex: 0 0 33%;
-            min-height: 120px;
-            max-height: 260px;
+            position: absolute;
+            top: 10vh;                   /* proportion of screen height */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
             display: flex;
-            align-items: center;
             justify-content: center;
+            pointer-events: none;
         }
 
         .portrait-container {
-            width: 60%;
-            max-width: 230px;
+            width: 55%;
+            max-width: 240px;
             aspect-ratio: 1 / 1;
             position: relative;
             image-rendering: pixelated;
@@ -117,7 +107,7 @@
             visibility: visible;
         }
 
-        /* Bigger sprite */
+        /* Sprite in header */
         .mini-avatar {
             width: 34px;
             height: 52px;
@@ -137,31 +127,48 @@
             50% { transform: translateY(-2px); }
         }
 
-        /* Bottom 2/3: dialogue + options, anchored at bottom */
+        /* Dialogue + options block – anchored near bottom */
         .dialogue-wrapper {
-            flex: 1 1 67%;
+            position: absolute;
+            left: 10px;
+            right: 10px;
+            bottom: 4vh;             /* proportionally from bottom */
             display: flex;
             flex-direction: column;
-            justify-content: flex-end;
-            padding: 8px;
-            padding-bottom: calc(env(safe-area-inset-bottom, 0) + 10px); /* safe area handled here */
             gap: 6px;
-            min-height: 0;
         }
 
-        /* Text box grows from bottom upwards (content-sized) */
-        #dialogue-box {
-            flex: 0 0 auto;
-            min-height: 72px;
+        .rpg-border {
+            border: 3px solid var(--pixel-black);
+            border-radius: 4px;
+            background-color: white;
+            position: relative;
+            box-shadow:
+                inset 0 0 0 3px #8bac0f,
+                inset 0 0 0 6px var(--pixel-black);
+            padding: 12px;
             display: flex;
             flex-direction: column;
+        }
+
+        #dialogue-box {
             cursor: pointer;
         }
 
+        /* Header row inside textbox */
+        .dialogue-header-row {
+            padding-top: 12px;     /* moves sprite down from top border */
+            padding-bottom: 4px;
+        }
+
+        #speaker-name {
+            font-size: 14px;
+            letter-spacing: 0.1em;
+        }
+
         #dialogue-text-area {
-            flex: 0 0 auto;
             position: relative;
-            overflow: hidden;
+            overflow: hidden;      /* no scroll – tap to advance line */
         }
 
         #dialogue-text {
@@ -173,27 +180,25 @@
             word-break: break-word;
         }
 
-        @media (min-width: 768px) {
-            #dialogue-text {
-                font-size: 20px;
-            }
+        .triangle-down {
+            width: 0;
+            height: 0;
+            border-left: 9px solid transparent;
+            border-right: 9px solid transparent;
+            border-top: 9px solid var(--pixel-black);
+            animation: blink 1s infinite;
+            position: absolute;
+            bottom: 6px;
+            right: 6px;
+            z-index: 30;
         }
 
-        #speaker-name {
-            font-size: 14px;
-            letter-spacing: 0.1em;
-        }
+        @keyframes blink { 50% { opacity: 0; } }
 
-        /* Move sprite + name down from the top border */
-        .dialogue-header-row {
-            padding-top: 12px;
-            padding-bottom: 4px;
-        }
-
-        /* Response buttons beneath the textbox, at the very bottom */
+        /* Options directly under textbox */
         #options-container {
-            flex: 0 0 auto;
-            display: none;
+            display: none; /* flex column when active */
+            width: 100%;
         }
 
         .pixel-btn {
@@ -212,21 +217,6 @@
             background-color: #f0f0f0;
         }
 
-        .triangle-down {
-            width: 0;
-            height: 0;
-            border-left: 9px solid transparent;
-            border-right: 9px solid transparent;
-            border-top: 9px solid var(--pixel-black);
-            animation: blink 1s infinite;
-            position: absolute;
-            bottom: 6px;
-            right: 6px;
-            z-index: 30;
-        }
-
-        @keyframes blink { 50% { opacity: 0; } }
-
         .hidden { display: none !important; }
 
         #error-msg {
@@ -243,18 +233,9 @@
             border: 2px solid white;
         }
 
-        /* Overlay */
-        #start-overlay {
-            position: absolute;
-            inset: 0;
-        }
-
+        /* Typography general */
         h1 {
             font-size: 22px;
-        }
-
-        @media (min-width: 768px) {
-            h1 { font-size: 26px; }
         }
 
         #loading-text {
@@ -265,15 +246,14 @@
             font-size: 14px;
         }
 
-        /* EXTRA SAFETY: on very small phones, slightly shrink UI to avoid overflow */
-        @media (max-width: 380px) {
+        /* Slight scale-down on small phones so portrait + box never collide */
+        @media (max-width: 400px), (max-height: 700px) {
             .portrait-wrapper {
-                flex: 0 0 30%;
-                min-height: 100px;
+                top: 8vh;
             }
             .portrait-container {
-                width: 55%;
-                max-width: 200px;
+                width: 50%;
+                max-width: 210px;
             }
             #dialogue-text {
                 font-size: 16px;
@@ -314,7 +294,7 @@
             </div>
         </div>
 
-        <!-- Portrait (top third) -->
+        <!-- Portrait near top -->
         <div class="portrait-wrapper">
             <div class="portrait-container">
                 <div id="portrait-base" class="portrait-base"></div>
@@ -322,10 +302,9 @@
             </div>
         </div>
 
-        <!-- Dialogue (bottom; textbox grows upward, options at bottom) -->
+        <!-- Dialogue anchored near bottom -->
         <div class="dialogue-wrapper">
             <div id="dialogue-box" class="rpg-border relative" onclick="handleDialogueClick()">
-                <!-- Header -->
                 <div class="dialogue-header-row flex items-center mb-2 border-b-2 border-green-900 pb-1 flex-shrink-0">
                     <div class="mini-avatar"></div>
                     <div id="speaker-name"
@@ -334,17 +313,16 @@
                     </div>
                 </div>
 
-                <!-- Text Area -->
                 <div id="dialogue-text-area">
                     <div id="dialogue-text">
-                        <!-- Text injected here -->
+                        <!-- Injected text -->
                     </div>
                 </div>
 
                 <div id="next-arrow" class="triangle-down hidden"></div>
             </div>
 
-            <div id="options-container" class="w-full flex-col gap-2 mt-1">
+            <div id="options-container" class="flex-col gap-2 mt-1">
                 <!-- Options injected here -->
             </div>
         </div>
@@ -677,13 +655,6 @@
     }
 
     els.startBtn.addEventListener('click', startApp);
-
-    window.addEventListener('orientationchange', () => {
-        setTimeout(() => {
-            if (!els.overlay.classList.contains('hidden') || !gameState.currentNode) return;
-            loadNode(gameState.currentNode);
-        }, 300);
-    });
 </script>
 </body>
 </html>
