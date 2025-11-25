@@ -19,8 +19,9 @@
             font-family: 'Press Start 2P', cursive;
             overflow: hidden;
             touch-action: manipulation;
-            height: 100vh; /* Ensure body takes full height */
-            height: -webkit-fill-available; /* Fix for iOS 15+ address bar issue */
+            /* FIX: Use dynamic viewport height for mobile browsers */
+            height: 100dvh; 
+            width: 100vw;
         }
 
         /* Scanlines */
@@ -127,8 +128,8 @@
         /* General UI */
         #game-container {
             max-width: 450px;
-            height: 100vh; /* Fallback */
-            height: -webkit-fill-available; /* iOS Fix */
+            /* FIX: Use dynamic viewport height to prevent bottom cutoff */
+            height: 100dvh; 
             margin: 0 auto;
             position: relative;
             background-color: var(--screen-bg);
@@ -164,6 +165,7 @@
             position: absolute;
             bottom: 10px;
             right: 10px;
+            z-index: 30; /* Ensure it sits on top */
         }
 
         /* Scroll Indicator */
@@ -175,11 +177,12 @@
             color: #0f380f; /* Matches theme */
             font-size: 12px;
             animation: bounce 1s infinite;
-            background-color: rgba(255,255,255,0.8);
-            padding: 2px 6px;
+            background-color: rgba(255,255,255,0.9);
+            padding: 4px 8px; /* Slightly bigger touch target visually */
             border-radius: 4px;
             pointer-events: none; /* Let clicks pass through to text */
             z-index: 20;
+            border: 1px solid #0f380f;
         }
 
         @keyframes blink { 50% { opacity: 0; } }
@@ -237,7 +240,8 @@
             <style>
                 /* Safe Area Inset for modern iPhones */
                 .pb-safe {
-                    padding-bottom: env(safe-area-inset-bottom, 20px);
+                    /* FIX: Increased fallback padding to 30px to ensure bottom isn't cut off */
+                    padding-bottom: env(safe-area-inset-bottom, 30px);
                 }
             </style>
             <!-- Chatbox -->
@@ -251,7 +255,8 @@
 
                 <!-- Scrollable Text Area -->
                 <div id="dialogue-scroll-area">
-                    <div id="dialogue-text" class="text-[16px] leading-relaxed text-black pr-2 break-words">
+                    <!-- FIX: Added pb-6 to prevent text from overlapping with bottom arrows -->
+                    <div id="dialogue-text" class="text-[16px] leading-relaxed text-black pr-2 break-words pb-6">
                         <!-- Text injected here -->
                     </div>
                 </div>
@@ -430,7 +435,6 @@
             els.portraitBase.style.backgroundImage = "url('Assets/large_portrait_base.png')";
             els.mouthLayer.style.visibility = 'hidden';
             
-            // Stop any mouth animation intervals
             if (gameState.mouthInterval) {
                 clearInterval(gameState.mouthInterval);
                 gameState.mouthInterval = null;
@@ -441,7 +445,6 @@
             const el = els.scrollArea;
             const isScrollable = el.scrollHeight > el.clientHeight;
             const isAtBottom = Math.abs(el.scrollHeight - el.clientHeight - el.scrollTop) < 2;
-
             if (isScrollable && !isAtBottom) {
                 els.scrollIndicator.classList.remove('hidden');
             } else {
