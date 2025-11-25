@@ -21,8 +21,6 @@ This is a static web app. It requires no backend, just a local server to load im
 2. Ensure your folder structure matches the **File Structure** section below.  
 3. Launch the app:
    - **VS Code (Recommended):** Right-click `index.html` and select **"Open with Live Server"**.  
-   - **Python:** Run `python3 -m http.server` in the terminal and go to `http://localhost:8000`.  
-   - **Direct:** You can try opening `index.html` in a browser, but some browsers block images loaded from local disk.  
 
 ## File Structure
 
