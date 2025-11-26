@@ -27,7 +27,7 @@
             overflow: hidden; /* no scroll */
         }
 
-        /* Main wrapper – use dvh so bottom bar doesn't eat content */
+        /* Main wrapper – dvh-aware so bottom bar doesn't eat content */
         #game-root {
             width: 100%;
             height: 100vh;    /* fallback */
@@ -130,12 +130,12 @@
             50% { transform: translateY(-2px); }
         }
 
-        /* Dialogue + options block – anchored near bottom */
+        /* Dialogue + options block – anchored near bottom INSIDE the container */
         .dialogue-wrapper {
             position: absolute;
             left: 0;
             right: 0;
-            bottom: 4vh;
+            bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
             display: flex;
             flex-direction: column;
             gap: 6px;
@@ -305,7 +305,7 @@
             </div>
         </div>
 
-        <!-- Dialogue anchored near bottom -->
+        <!-- Dialogue anchored near bottom (inside visible area) -->
         <div class="dialogue-wrapper">
             <div id="dialogue-box" class="rpg-border relative" onclick="handleDialogueClick()">
                 <div class="dialogue-header-row flex items-center mb-2 border-b-2 border-green-900 pb-1 flex-shrink-0">
@@ -519,14 +519,26 @@
         els.options.style.display = 'none';
         els.arrow.classList.add('hidden');
         els.text.innerHTML = '';
+
+        // Reset state
         gameState.isBirthdayMode = false;
         gameState.currentLines = [];
         gameState.lineIndex = 0;
+
+        // Reset portrait
         els.portraitBase.style.backgroundImage = "url('Assets/large_portrait_base.png')";
-        els.mouthLayer.style.visibility = 'hidden';
+
+        // Clear mouth animation & visibility purely via classes/intervals
+        els.mouthLayer.classList.remove('mouth-open');
+
         if (gameState.mouthInterval) {
             clearInterval(gameState.mouthInterval);
             gameState.mouthInterval = null;
+        }
+        // Clear any pending typewriter timeouts just in case
+        if (gameState.timeouts.length) {
+            gameState.timeouts.forEach(clearTimeout);
+            gameState.timeouts = [];
         }
     }
 
@@ -551,7 +563,8 @@
         if (node.special === 'cake') {
             gameState.isBirthdayMode = true;
             els.portraitBase.style.backgroundImage = "url('Assets/base_birthday_cake.png')";
-            els.mouthLayer.style.visibility = 'hidden';
+            // Ensure mouth is fully off in cake mode via classes, not inline styles
+            els.mouthLayer.classList.remove('mouth-open');
             if (gameState.mouthInterval) {
                 clearInterval(gameState.mouthInterval);
                 gameState.mouthInterval = null;
