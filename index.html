@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport"
-          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Nic's 32nd Birthday RPG</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -14,7 +15,8 @@
         }
 
         /* Base reset */
-        html, body {
+        html,
+        body {
             margin: 0;
             padding: 0;
             width: 100%;
@@ -24,14 +26,17 @@
         body {
             background-color: var(--screen-bg);
             font-family: 'Press Start 2P', cursive;
-            overflow: hidden; /* no scroll */
+            overflow: hidden;
+            /* no scroll */
         }
 
         /* Main wrapper – dvh-aware so bottom bar doesn't eat content */
         #game-root {
             width: 100%;
-            height: 100vh;    /* fallback */
-            height: 100dvh;   /* real dynamic viewport on Safari/Chrome mobile */
+            height: 100vh;
+            /* fallback */
+            height: 100dvh;
+            /* real dynamic viewport on Safari/Chrome mobile */
             display: flex;
             justify-content: center;
             background: #8bac0f;
@@ -40,22 +45,22 @@
         #game-container {
             width: 100%;
             max-width: 480px;
-            height: 100%;      /* fill game-root, don't stack vh on vh */
+            height: 100%;
+            /* fill game-root, don't stack vh on vh */
             position: relative;
             image-rendering: pixelated;
             box-sizing: border-box;
-            padding: 0 16px;   /* horizontal padding */
+            padding: 0 16px;
+            /* horizontal padding */
         }
 
         /* Scanlines overlay */
         .scanlines {
-            background: linear-gradient(
-                to bottom,
-                rgba(255,255,255,0),
-                rgba(255,255,255,0) 50%,
-                rgba(0,0,0,0.12) 50%,
-                rgba(0,0,0,0.12)
-            );
+            background: linear-gradient(to bottom,
+                    rgba(255, 255, 255, 0),
+                    rgba(255, 255, 255, 0) 50%,
+                    rgba(0, 0, 0, 0.12) 50%,
+                    rgba(0, 0, 0, 0.12));
             background-size: 100% 4px;
             pointer-events: none;
         }
@@ -126,8 +131,15 @@
         }
 
         @keyframes bob {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-2px); }
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-2px);
+            }
         }
 
         /* Dialogue + options block – anchored near bottom INSIDE the container */
@@ -160,7 +172,8 @@
 
         /* Header row inside textbox */
         .dialogue-header-row {
-            padding-top: 12px;     /* moves sprite down from top border */
+            padding-top: 12px;
+            /* moves sprite down from top border */
             padding-bottom: 4px;
         }
 
@@ -171,7 +184,8 @@
 
         #dialogue-text-area {
             position: relative;
-            overflow: hidden;      /* no scroll – tap to advance line */
+            overflow: hidden;
+            /* no scroll – tap to advance line */
         }
 
         /* MAIN IN-GAME TEXT SIZE (dialogue + options) */
@@ -179,18 +193,30 @@
             font-size: 18px;
             line-height: 1.5;
             color: #000;
-            padding: 0 0.75rem 1.2rem 0.75rem; /* horizontal + bottom padding */
+            padding: 0 0.75rem 1.2rem 0.75rem;
+            /* horizontal + bottom padding */
             word-break: break-word;
         }
 
         .pixel-btn {
             background-color: white;
-            border: 3px solid black;
-            padding: 9px;
+            border: 3px solid var(--pixel-black);
+            border-radius: 4px;
+            box-shadow:
+                inset 0 0 0 3px #8bac0f,
+                inset 0 0 0 6px var(--pixel-black);
+
+            /* vertical centring */
+            display: flex;
+            align-items: center;
+            /* centre text vertically */
+            justify-content: flex-start;
+            padding: 10px 12px;
+
             cursor: pointer;
             text-align: left;
             transition: transform 0.1s;
-            font-size: 18px;   /* match dialogue text size */
+            font-size: 18px;
             line-height: 1.4;
         }
 
@@ -212,15 +238,22 @@
             z-index: 30;
         }
 
-        @keyframes blink { 50% { opacity: 0; } }
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
 
         /* Options directly under textbox */
         #options-container {
-            display: none; /* flex column when active */
+            display: none;
+            /* flex column when active */
             width: 100%;
         }
 
-        .hidden { display: none !important; }
+        .hidden {
+            display: none !important;
+        }
 
         #error-msg {
             background: red;
@@ -236,441 +269,528 @@
             border: 2px solid white;
         }
 
-        /* Typography general */
-        h1 {
-            font-size: 22px;
+        /* START SCREEN TYPOGRAPHY + LAYOUT */
+
+        #start-overlay {
+            text-align: center;
         }
 
-        #loading-text {
-            font-size: 14px;
+        /* Main title */
+        #start-overlay h1 {
+            font-size: clamp(26px, 6vw, 40px);
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            margin: 0 0 1.75rem 0;
+            text-shadow:
+                0 0 4px #003300,
+                0 0 8px #003300;
         }
 
-        #start-btn {
-            font-size: 14px;
+        /* Subtitle / system status line */
+        #start-overlay #loading-text {
+            font-size: clamp(16px, 3vw, 18px);
+            letter-spacing: 0.12em;
+            margin: 0 0 2rem 0;
+            color: #8bac0f;
         }
+
+        /* Start button */
+        #start-overlay #start-btn {
+            display: inline-block;
+            margin: 0 auto;
+            font-size: clamp(14px, 3.2vw, 18px);
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            padding: 0.9rem 1rem;
+            border-width: 3px;
+        }
+
+
 
         /* Slight scale-down on small phones so portrait + box never collide */
-        @media (max-width: 400px), (max-height: 700px) {
+        @media (max-width: 400px),
+        (max-height: 700px) {
             .portrait-wrapper {
                 top: 8vh;
             }
+
             .portrait-container {
                 width: 50%;
                 max-width: 210px;
             }
+
             #dialogue-text {
                 font-size: 16px;
                 line-height: 1.45;
             }
+
             .pixel-btn {
                 font-size: 16px;
                 padding: 8px;
             }
+
             h1 {
                 font-size: 20px;
             }
         }
     </style>
 </head>
-<body class="bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIGZpbGw9IiM4YmFjMGYiLz48cmVjdCB3aWR0aD0iMiIgaGVpZ2h0PSIyIiB4PSIxMCIgeT0iMTAiIGZpbGw9IiM3YjlhMGIiLz48cmVjdCB3aWR0aD0iMiIgaGVpZ2h0PSIyIiB4PSIzMCIgeT0iMjUiIGZpbGw9IiM3YjlhMGIiLz48L3N2Zz4=')]">
 
-<div id="game-root">
-    <div id="game-container" class="shadow-2xl">
-        <div class="scanlines absolute inset-0 z-[60] opacity-20 pointer-events-none"></div>
+<body
+    class="bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIGZpbGw9IiM4YmFjMGYiLz48cmVjdCB3aWR0aD0iMiIgaGVpZ2h0PSIyIiB4PSIxMCIgeT0iMTAiIGZpbGw9IiM3YjlhMGIiLz48cmVjdCB3aWR0aD0iMiIgaGVpZ2h0PSIyIiB4PSIzMCIgeT0iMjUiIGZpbGw9IiM3YjlhMGIiLz48L3N2Zz4=')]">
 
-        <div id="error-msg"></div>
+    <div id="game-root">
+        <div id="game-container" class="shadow-2xl">
+            <div class="scanlines absolute inset-0 z-[60] opacity-20 pointer-events-none"></div>
 
-        <!-- Start Overlay -->
-        <div id="start-overlay" class="z-50 bg-black flex flex-col items-center justify-center text-white p-6 gap-8">
-            <h1 class="text-center text-green-400 leading-snug px-4">
-                NIC'S BIRTHDAY QUEST
-            </h1>
+            <div id="error-msg"></div>
 
-            <div class="flex flex-col items-center gap-4 w-full">
-                <p id="loading-text" class="text-gray-500 mb-0">
-                    Loading Party Assets...
-                </p>
-                <button id="start-btn"
+            <!-- Start Overlay -->
+            <div id="start-overlay"
+                class="z-50 bg-black flex flex-col items-center justify-center text-white p-6 gap-8">
+                <h1 class="text-center text-green-400 leading-snug px-4">
+                    NIC'S BIRTHDAY QUEST
+                </h1>
+
+                <div class="flex flex-col items-center gap-4 w-full">
+                    <p id="loading-text" class="text-gray-500 mb-0">
+                        Loading Party Assets...
+                    </p>
+                    <button id="start-btn"
                         class="hidden text-white mb-0 text-center px-5 py-2 border-2 border-white animate-pulse hover:text-green-400 hover:border-green-400 cursor-pointer transition-colors">
-                    Start Adventure
-                </button>
+                        Start Adventure
+                    </button>
+                </div>
             </div>
-        </div>
 
-        <!-- Portrait near top -->
-        <div class="portrait-wrapper">
-            <div class="portrait-container">
-                <div id="portrait-base" class="portrait-base"></div>
-                <div id="mouth-layer" class="mouth-overlay"></div>
+            <!-- Portrait near top -->
+            <div class="portrait-wrapper">
+                <div class="portrait-container">
+                    <div id="portrait-base" class="portrait-base"></div>
+                    <div id="mouth-layer" class="mouth-overlay"></div>
+                </div>
             </div>
-        </div>
 
-        <!-- Dialogue anchored near bottom (inside visible area) -->
-        <div class="dialogue-wrapper">
-            <div id="dialogue-box" class="rpg-border relative" onclick="handleDialogueClick()">
-                <div class="dialogue-header-row flex items-center mb-2 border-b-2 border-green-900 pb-1 flex-shrink-0">
-                    <div class="mini-avatar"></div>
-                    <div id="speaker-name"
-                         class="text-blue-900 font-bold uppercase tracking-widest ml-1">
-                        Zac
+            <!-- Dialogue anchored near bottom (inside visible area) -->
+            <div class="dialogue-wrapper">
+                <div id="dialogue-box" class="rpg-border relative" onclick="handleDialogueClick()">
+                    <div
+                        class="dialogue-header-row flex items-center mb-2 border-b-2 border-green-900 pb-1 flex-shrink-0">
+                        <div class="mini-avatar"></div>
+                        <div id="speaker-name" class="text-blue-900 font-bold uppercase tracking-widest ml-1">
+                            Zac
+                        </div>
                     </div>
+
+                    <div id="dialogue-text-area">
+                        <div id="dialogue-text">
+                            <!-- Injected text -->
+                        </div>
+                    </div>
+
+                    <div id="next-arrow" class="triangle-down hidden"></div>
                 </div>
 
-                <div id="dialogue-text-area">
-                    <div id="dialogue-text">
-                        <!-- Injected text -->
-                    </div>
+                <div id="options-container" class="flex-col gap-2 mt-1">
+                    <!-- Options injected here -->
                 </div>
-
-                <div id="next-arrow" class="triangle-down hidden"></div>
-            </div>
-
-            <div id="options-container" class="flex-col gap-2 mt-1">
-                <!-- Options injected here -->
             </div>
         </div>
     </div>
-</div>
 
-<script>
-    // --- ASSET LOADING ---
-    (function loadAssets() {
-        const btn = document.getElementById('start-btn');
-        const loadText = document.getElementById('loading-text');
-        const errorMsg = document.getElementById('error-msg');
+    <script>
+        // --- ASSET LOADING ---
+        (function loadAssets() {
+            const btn = document.getElementById('start-btn');
+            const loadText = document.getElementById('loading-text');
+            const errorMsg = document.getElementById('error-msg');
 
-        const requiredImages = [
-            'Assets/large_portrait_base.png',
-            'Assets/large_portrait_mouth_open.png',
-            'Assets/small_sprite_full.png',
-            'Assets/base_birthday_cake.png'
-        ];
+            const requiredImages = [
+                'Assets/large_portrait_base.png',
+                'Assets/large_portrait_mouth_open.png',
+                'Assets/small_sprite_full.png',
+                'Assets/base_birthday_cake.png'
+            ];
 
-        let loadedCount = 0;
+            let loadedCount = 0;
 
-        requiredImages.forEach(src => {
-            const img = new Image();
-            img.onload = () => {
-                loadedCount++;
-                if (loadedCount === requiredImages.length) {
-                    loadText.innerText = "Assets Loaded. Ready.";
+            requiredImages.forEach(src => {
+                const img = new Image();
+                img.onload = () => {
+                    loadedCount++;
+                    if (loadedCount === requiredImages.length) {
+                        loadText.innerText = "Assets Loaded. Ready.";
+                        loadText.classList.remove('text-gray-500');
+                        loadText.classList.add('text-green-500');
+                        btn.classList.remove('hidden');
+                    }
+                };
+                img.onerror = () => {
+                    errorMsg.style.display = 'block';
+                    errorMsg.innerText = `ERROR: Missing file '${src}'. Please check Assets folder.`;
+                    loadText.innerText = "Asset Missing";
                     loadText.classList.remove('text-gray-500');
-                    loadText.classList.add('text-green-500');
-                    btn.classList.remove('hidden');
-                }
-            };
-            img.onerror = () => {
-                errorMsg.style.display = 'block';
-                errorMsg.innerText = `ERROR: Missing file '${src}'. Please check Assets folder.`;
-                loadText.innerText = "Asset Missing";
-                loadText.classList.remove('text-gray-500');
-                loadText.classList.add('text-red-500');
-            };
-            img.src = src;
-        });
-    })();
+                    loadText.classList.add('text-red-500');
+                };
+                img.src = src;
+            });
+        })();
 
-    // --- STATE ---
-    const gameState = {
-        currentNode: 'start',
-        lineIndex: 0,
-        isTyping: false,
-        fullText: '',
-        typingSpeed: 30,
-        timeouts: [],
-        mouthInterval: null,
-        isBirthdayMode: false,
-        currentLines: []
-    };
+        // --- STATE ---
+        const gameState = {
+            currentNode: 'start',
+            lineIndex: 0,
+            isTyping: false,
+            fullText: '',
+            typingSpeed: 30,
+            timeouts: [],
+            mouthInterval: null,
+            isBirthdayMode: false,
+            currentLines: []
+        };
 
-    let audioCtx;
-    function initAudio() {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-
-    function playBlip() {
-        if (!audioCtx) return;
-        const oscillator = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
-        oscillator.type = 'square';
-        oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
-        oscillator.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.05);
-        gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
-        oscillator.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-        oscillator.start();
-        oscillator.stop(audioCtx.currentTime + 0.05);
-    }
-
-    // --- CONVERSATION DATA ---
-    const conversation = {
-        'start': {
-            text: [
-                "System initialized...",
-                "Hello Nic.",
-                "I have been waiting for you."
-            ],
-            next: 'check_date'
-        },
-        'check_date': {
-            text: [
-                "My database indicates a 365-day cycle has completed...",
-                "Am I therefore correct in saying it is your birthday today?"
-            ],
-            options: [
-                { text: "Yes, it is!", next: 'confirm_age' },
-                { text: "No, I'm sick and tired of clankers.", next: 'denial' }
-            ]
-        },
-        'denial': {
-            text: [
-                "Incorrect...",
-                "My calculations are precise to the millisecond.",
-                "We will proceed as if it is..."
-            ],
-            next: 'confirm_age'
-        },
-        'confirm_age': {
-            text: [
-                "According to my calculations you have now arrived at Level 32.",
-                "Congratulations on achieving such a feat!",
-                "Question: Has the unit known as 'Zac' purchased you a beverage to commemorate this change of circumstance?"
-            ],
-            options: [
-                { text: "Yes he has!", next: 'good_zac' },
-                { text: "No, not yet.", next: 'bad_zac' }
-            ]
-        },
-        'good_zac': {
-            text: [
-                "Acceptable...",
-                "He is functioning within normal parameters.",
-                "Status report: How is the evening?"
-            ],
-            options: [
-                { text: "It's great!", next: 'joke_offer' },
-                { text: "It's okay.", next: 'joke_offer' }
-            ]
-        },
-        'bad_zac': {
-            text: [
-                "Unsatisfactory...",
-                "He better get to it immediately.",
-                "Status report: How is the evening otherwise?"
-            ],
-            options: [
-                { text: "It's great!", next: 'joke_offer' },
-                { text: "It's okay.", next: 'joke_offer' }
-            ]
-        },
-        'joke_offer': {
-            text: [
-                "Noted...",
-                "I have retrieved a humor file for this occasion.",
-                "Would you like to hear it?"
-            ],
-            options: [
-                { text: "Let's hear it.", next: 'joke_punchline' },
-                { text: "Please no.", next: 'joke_punchline' }
-            ]
-        },
-        'joke_punchline': {
-            text: [
-                "Aggression research hahahaha."
-            ],
-            next: 'birthday_reveal'
-        },
-        'birthday_reveal': {
-            text: [
-                "Protocol complete...",
-                "Happy Birthday Nic!",
-                "I really appreciate having you as a friend and hope you have an awesome day!"
-            ],
-            special: 'cake',
-            options: [
-                { text: "Start Over", next: 'HOME' }
-            ]
-        }
-    };
-
-    // --- DOM ELEMENTS ---
-    const els = {
-        overlay: document.getElementById('start-overlay'),
-        startBtn: document.getElementById('start-btn'),
-        text: document.getElementById('dialogue-text'),
-        arrow: document.getElementById('next-arrow'),
-        options: document.getElementById('options-container'),
-        portraitBase: document.getElementById('portrait-base'),
-        mouthLayer: document.getElementById('mouth-layer')
-    };
-
-    // --- LOGIC ---
-
-    function startApp() {
-        els.overlay.classList.add('hidden');
-        initAudio();
-        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-        loadNode('start');
-    }
-
-    function resetToHome() {
-        els.overlay.classList.remove('hidden');
-        els.options.style.display = 'none';
-        els.arrow.classList.add('hidden');
-        els.text.innerHTML = '';
-
-        // Reset state
-        gameState.isBirthdayMode = false;
-        gameState.currentLines = [];
-        gameState.lineIndex = 0;
-
-        // Reset portrait
-        els.portraitBase.style.backgroundImage = "url('Assets/large_portrait_base.png')";
-
-        // Clear mouth animation & visibility purely via classes/intervals
-        els.mouthLayer.classList.remove('mouth-open');
-
-        if (gameState.mouthInterval) {
-            clearInterval(gameState.mouthInterval);
-            gameState.mouthInterval = null;
-        }
-        // Clear any pending typewriter timeouts just in case
-        if (gameState.timeouts.length) {
-            gameState.timeouts.forEach(clearTimeout);
-            gameState.timeouts = [];
-        }
-    }
-
-    function loadNode(nodeId) {
-        if (nodeId === 'HOME') {
-            resetToHome();
-            return;
+        let audioCtx;
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         }
 
-        const node = conversation[nodeId];
-        if (!node) return;
+        function playBlip() {
+            if (!audioCtx) return;
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.type = 'square';
+            oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.05);
+            gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.05);
+        }
 
-        gameState.currentNode = nodeId;
-        gameState.lineIndex = 0;
-        gameState.currentLines = Array.isArray(node.text) ? node.text : [node.text];
-        gameState.fullText = gameState.currentLines[0] || '';
+        function playCoin() {
+            if (!audioCtx) return;
 
-        els.options.style.display = 'none';
-        els.arrow.classList.add('hidden');
-        els.text.innerHTML = '';
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
 
-        if (node.special === 'cake') {
-            gameState.isBirthdayMode = true;
-            els.portraitBase.style.backgroundImage = "url('Assets/base_birthday_cake.png')";
-            // Ensure mouth is fully off in cake mode via classes, not inline styles
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(900, now);
+            osc.frequency.exponentialRampToValueAtTime(1800, now + 0.12);
+
+            gain.gain.setValueAtTime(0.18, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start(now);
+            osc.stop(now + 0.14);
+        }
+
+        function playStartJingle() {
+            if (!audioCtx) return;
+
+            const now = audioCtx.currentTime;
+            const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
+
+            notes.forEach((freq, i) => {
+                const t = now + i * 0.12;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(freq, t);
+
+                gain.gain.setValueAtTime(0.16, t);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start(t);
+                osc.stop(t + 0.2);
+            });
+        }
+
+
+        // --- CONVERSATION DATA ---
+        const conversation = {
+            'start': {
+                text: [
+                    "System initialized...",
+                    "Hello Nic.",
+                    "I have been waiting for you."
+                ],
+                next: 'check_date'
+            },
+            'check_date': {
+                text: [
+                    "My database indicates a 365-day cycle has completed...",
+                    "Am I therefore correct in saying it is your birthday today?"
+                ],
+                options: [
+                    { text: "Yes, it is!", next: 'confirm_age' },
+                    { text: "No, I'm sick and tired of clankers.", next: 'denial' }
+                ]
+            },
+            'denial': {
+                text: [
+                    "Incorrect...",
+                    "My calculations are precise to the millisecond.",
+                    "We will proceed as if it is..."
+                ],
+                next: 'confirm_age'
+            },
+            'confirm_age': {
+                text: [
+                    "According to my calculations you have now arrived at Level 32.",
+                    "Congratulations on achieving such a feat!",
+                    "Question: Has the unit known as 'Zac' purchased you a beverage to commemorate this change of circumstance?"
+                ],
+                options: [
+                    { text: "Yes he has!", next: 'good_zac' },
+                    { text: "No, not yet.", next: 'bad_zac' }
+                ]
+            },
+            'good_zac': {
+                text: [
+                    "Acceptable...",
+                    "He is functioning within normal parameters.",
+                    "Status report: How is the evening?"
+                ],
+                options: [
+                    { text: "It's great!", next: 'joke_offer' },
+                    { text: "It's okay.", next: 'joke_offer' }
+                ]
+            },
+            'bad_zac': {
+                text: [
+                    "Unsatisfactory...",
+                    "He better get to it immediately.",
+                    "Status report: How is the evening otherwise?"
+                ],
+                options: [
+                    { text: "It's great!", next: 'joke_offer' },
+                    { text: "It's okay.", next: 'joke_offer' }
+                ]
+            },
+            'joke_offer': {
+                text: [
+                    "Noted...",
+                    "I have retrieved a humor file for this occasion.",
+                    "Would you like to hear it?"
+                ],
+                options: [
+                    { text: "Let's hear it.", next: 'joke_punchline' },
+                    { text: "Please no.", next: 'joke_punchline' }
+                ]
+            },
+            'joke_punchline': {
+                text: [
+                    "Aggression research hahahaha."
+                ],
+                next: 'birthday_reveal'
+            },
+            'birthday_reveal': {
+                text: [
+                    "Protocol complete...",
+                    "Happy Birthday Nic!",
+                    "I really appreciate having you as a friend and hope you have an awesome day!"
+                ],
+                special: 'cake',
+                options: [
+                    { text: "Start Over", next: 'HOME' }
+                ]
+            }
+        };
+
+        // --- DOM ELEMENTS ---
+        const els = {
+            overlay: document.getElementById('start-overlay'),
+            startBtn: document.getElementById('start-btn'),
+            text: document.getElementById('dialogue-text'),
+            arrow: document.getElementById('next-arrow'),
+            options: document.getElementById('options-container'),
+            portraitBase: document.getElementById('portrait-base'),
+            mouthLayer: document.getElementById('mouth-layer')
+        };
+
+        // --- LOGIC ---
+
+        function startApp() {
+            initAudio();
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+
+            // Coin blip + tiny jingle when starting
+            playCoin();
+            playStartJingle();
+
+            els.overlay.classList.add('hidden');
+            loadNode('start');
+        }
+
+
+        function resetToHome() {
+            els.overlay.classList.remove('hidden');
+            els.options.style.display = 'none';
+            els.arrow.classList.add('hidden');
+            els.text.innerHTML = '';
+
+            // Reset state
+            gameState.isBirthdayMode = false;
+            gameState.currentLines = [];
+            gameState.lineIndex = 0;
+
+            // Reset portrait
+            els.portraitBase.style.backgroundImage = "url('Assets/large_portrait_base.png')";
+
+            // Clear mouth animation & visibility purely via classes/intervals
             els.mouthLayer.classList.remove('mouth-open');
+
             if (gameState.mouthInterval) {
                 clearInterval(gameState.mouthInterval);
                 gameState.mouthInterval = null;
             }
-        } else {
-            gameState.isBirthdayMode = false;
-            els.portraitBase.style.backgroundImage = "url('Assets/large_portrait_base.png')";
+            // Clear any pending typewriter timeouts just in case
+            if (gameState.timeouts.length) {
+                gameState.timeouts.forEach(clearTimeout);
+                gameState.timeouts = [];
+            }
         }
 
-        if (gameState.fullText) {
-            typeWriter(gameState.fullText, 0);
+        function loadNode(nodeId) {
+            if (nodeId === 'HOME') {
+                resetToHome();
+                return;
+            }
+
+            const node = conversation[nodeId];
+            if (!node) return;
+
+            gameState.currentNode = nodeId;
+            gameState.lineIndex = 0;
+            gameState.currentLines = Array.isArray(node.text) ? node.text : [node.text];
+            gameState.fullText = gameState.currentLines[0] || '';
+
+            els.options.style.display = 'none';
+            els.arrow.classList.add('hidden');
+            els.text.innerHTML = '';
+
+            if (node.special === 'cake') {
+                gameState.isBirthdayMode = true;
+                els.portraitBase.style.backgroundImage = "url('Assets/base_birthday_cake.png')";
+                // Ensure mouth is fully off in cake mode via classes, not inline styles
+                els.mouthLayer.classList.remove('mouth-open');
+                if (gameState.mouthInterval) {
+                    clearInterval(gameState.mouthInterval);
+                    gameState.mouthInterval = null;
+                }
+            } else {
+                gameState.isBirthdayMode = false;
+                els.portraitBase.style.backgroundImage = "url('Assets/large_portrait_base.png')";
+            }
+
+            if (gameState.fullText) {
+                typeWriter(gameState.fullText, 0);
+            }
         }
-    }
 
-    function typeWriter(text, index) {
-        gameState.isTyping = true;
+        function typeWriter(text, index) {
+            gameState.isTyping = true;
 
-        if (!gameState.mouthInterval && !gameState.isBirthdayMode) {
-            els.mouthLayer.classList.add('mouth-open');
-            gameState.mouthInterval = setInterval(() => {
-                els.mouthLayer.classList.toggle('mouth-open');
-            }, 100);
+            if (!gameState.mouthInterval && !gameState.isBirthdayMode) {
+                els.mouthLayer.classList.add('mouth-open');
+                gameState.mouthInterval = setInterval(() => {
+                    els.mouthLayer.classList.toggle('mouth-open');
+                }, 100);
+            }
+
+            if (index < text.length) {
+                els.text.innerHTML += text.charAt(index);
+                if (index % 2 === 0) playBlip();
+
+                const timeoutId = setTimeout(() => {
+                    typeWriter(text, index + 1);
+                }, gameState.typingSpeed);
+                gameState.timeouts.push(timeoutId);
+            } else {
+                finishTyping();
+            }
         }
 
-        if (index < text.length) {
-            els.text.innerHTML += text.charAt(index);
-            if (index % 2 === 0) playBlip();
+        function finishTyping() {
+            gameState.timeouts.forEach(clearTimeout);
+            gameState.timeouts = [];
 
-            const timeoutId = setTimeout(() => {
-                typeWriter(text, index + 1);
-            }, gameState.typingSpeed);
-            gameState.timeouts.push(timeoutId);
-        } else {
-            finishTyping();
-        }
-    }
+            if (gameState.mouthInterval) {
+                clearInterval(gameState.mouthInterval);
+                gameState.mouthInterval = null;
+            }
+            els.mouthLayer.classList.remove('mouth-open');
 
-    function finishTyping() {
-        gameState.timeouts.forEach(clearTimeout);
-        gameState.timeouts = [];
+            gameState.isTyping = false;
+            els.text.innerHTML = gameState.fullText;
 
-        if (gameState.mouthInterval) {
-            clearInterval(gameState.mouthInterval);
-            gameState.mouthInterval = null;
-        }
-        els.mouthLayer.classList.remove('mouth-open');
+            const node = conversation[gameState.currentNode];
+            const lastLine = (gameState.lineIndex === gameState.currentLines.length - 1);
 
-        gameState.isTyping = false;
-        els.text.innerHTML = gameState.fullText;
-
-        const node = conversation[gameState.currentNode];
-        const lastLine = (gameState.lineIndex === gameState.currentLines.length - 1);
-
-        if (lastLine) {
-            if (node.options) {
-                showOptions(node.options);
-                els.arrow.classList.add('hidden');
+            if (lastLine) {
+                if (node.options) {
+                    showOptions(node.options);
+                    els.arrow.classList.add('hidden');
+                } else {
+                    els.arrow.classList.remove('hidden');
+                }
             } else {
                 els.arrow.classList.remove('hidden');
             }
-        } else {
-            els.arrow.classList.remove('hidden');
-        }
-    }
-
-    function showOptions(options) {
-        els.options.innerHTML = '';
-        els.options.style.display = 'flex';
-        els.options.style.flexDirection = 'column';
-
-        options.forEach(opt => {
-            const btn = document.createElement('div');
-            btn.className = 'pixel-btn';
-            btn.innerText = '> ' + opt.text;
-            btn.onclick = (e) => {
-                e.stopPropagation();
-                loadNode(opt.next);
-            };
-            els.options.appendChild(btn);
-        });
-    }
-
-    function handleDialogueClick() {
-        const node = conversation[gameState.currentNode];
-
-        if (gameState.isTyping) {
-            finishTyping();
-            return;
         }
 
-        if (gameState.lineIndex < gameState.currentLines.length - 1) {
-            gameState.lineIndex++;
-            gameState.fullText = gameState.currentLines[gameState.lineIndex];
-            els.text.innerHTML = '';
-            els.arrow.classList.add('hidden');
-            typeWriter(gameState.fullText, 0);
-        } else {
-            if (node.options) {
-                // options already visible
-            } else if (node.next) {
-                loadNode(node.next);
+        function showOptions(options) {
+            els.options.innerHTML = '';
+            els.options.style.display = 'flex';
+            els.options.style.flexDirection = 'column';
+
+            options.forEach(opt => {
+                const btn = document.createElement('div');
+                btn.className = 'pixel-btn';
+                btn.innerText = '> ' + opt.text;
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    loadNode(opt.next);
+                };
+                els.options.appendChild(btn);
+            });
+        }
+
+        function handleDialogueClick() {
+            const node = conversation[gameState.currentNode];
+
+            if (gameState.isTyping) {
+                finishTyping();
+                return;
+            }
+
+            if (gameState.lineIndex < gameState.currentLines.length - 1) {
+                gameState.lineIndex++;
+                gameState.fullText = gameState.currentLines[gameState.lineIndex];
+                els.text.innerHTML = '';
+                els.arrow.classList.add('hidden');
+                typeWriter(gameState.fullText, 0);
+            } else {
+                if (node.options) {
+                    // options already visible
+                } else if (node.next) {
+                    loadNode(node.next);
+                }
             }
         }
-    }
 
-    els.startBtn.addEventListener('click', startApp);
-</script>
+        els.startBtn.addEventListener('click', startApp);
+    </script>
 </body>
+
 </html>
